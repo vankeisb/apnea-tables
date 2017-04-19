@@ -9,7 +9,7 @@ module.exports = {
 
     output: {
         path: path.resolve(__dirname + "/src"),
-        filename: '[name].js',
+        filename: '[name].js'
     },
 
     module: {
@@ -19,6 +19,10 @@ module.exports = {
             //     exclude: /node_modules/,
             //     loader: 'file',
             // },
+            {
+                test: /\.scss$/,
+                loaders: ["style-loader", "css-loader", "sass-loader"]
+            },
             {
                 test: /\.elm$/,
                 exclude: [/elm-stuff/, /node_modules/],

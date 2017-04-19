@@ -18,5 +18,3 @@ tableDecoder =
         (field "isO2" bool)
         (field "fixed" int)
         (field "steps" <| list int)
-
-

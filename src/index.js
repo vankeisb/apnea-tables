@@ -1,5 +1,7 @@
 'use strict';
 
+require('./style.scss');
+
 // require the App
 var App = require('./App.elm').App;
 

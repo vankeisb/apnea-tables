@@ -1,5 +1,7 @@
 module Models exposing (..)
 
+import Time exposing (Time)
+
 
 type alias FileData =
     { fileId : String
@@ -16,11 +18,25 @@ type ModelState
     | SavingError String
 
 
-type AuthState 
-    = Authenticated 
+type AuthState
+    = Authenticated
     | NotAuthenticated
     | AuthUnknown
 
+
+type alias RunData =
+    { table : TableDef
+    , curTime : Time
+    , progressInfo : Maybe ProgressInfo
+    }
+
+
+type alias ProgressInfo =
+    { startTime : Time
+    , curStepIndex : Int
+    , curStepHold : Bool
+    , curStepPercent : Int
+    }
 
 type alias Model =
     { state : ModelState
@@ -28,7 +44,7 @@ type alias Model =
     , authState : AuthState
     , tables : List TableDef
     , dirty : Bool
-    , counter : Int
+    , runData : Maybe RunData
     }
 
 
@@ -47,7 +63,15 @@ initialModel =
     , authState = AuthUnknown
     , tables = []
     , dirty = False
-    , counter = 2
+    , runData = Nothing
+    }
+
+
+initRunData : TableDef -> RunData
+initRunData table =
+    { table = table
+    , curTime = 0.0
+    , progressInfo = Nothing
     }
 
 
@@ -61,10 +85,25 @@ type Msg
     | SaveOk
     | SaveError String
     | CreateTable Bool
-    | RemoveTable Int -- index
-    | RemoveStep Int Int -- table index, step index
-    | AddStep Bool Int Int -- add before, table index, step index
-    | UpdateTableName Int String -- index, new name
+    | RemoveTable Int
+      -- index
+    | RemoveStep Int Int
+      -- table index, step index
+    | AddStep Bool Int Int
+      -- add before, table index, step index
+    | UpdateTableName Int String
+      -- index, new name
+    | UpdateTableField Int Int Bool String
+    -- tableIndex, step index, is fixed ?, new val
+    | RunTable Int
+    | Tick Time
+    | BackToHome
+    | StartStopTable
+    | StartTable Time
+
+
+
+-- index
 
 
 type alias SerializedData =

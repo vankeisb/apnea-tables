@@ -3,9 +3,9 @@ module App exposing (..)
 import Drive
 import Json.Encode
 import Models exposing (..)
+import Time
 import Views as Views
 import Update
-
 import Html exposing (..)
 import Date exposing (..)
 import Task
@@ -24,10 +24,19 @@ subscriptions model =
     Sub.batch
         [ Drive.driveOnFileRead ReadFileOk
         , Drive.driveOnFileReadError ReadFileError
-        , Drive.driveOnAuthReady AuthReady        
+        , Drive.driveOnAuthReady AuthReady
         , Drive.driveOnFileSave (\() -> SaveOk)
         , Drive.driveOnFileSaveError SaveError
+        ,
+            case model.runData of
+                Just runData ->
+                    runData.progressInfo
+                        |> Maybe.map (\pi -> Time.every Time.second Tick)
+                        |> Maybe.withDefault Sub.none
+                Nothing ->
+                    Sub.none
         ]
+
 
 
 -- MAIN
@@ -41,6 +50,3 @@ main =
         , update = Update.update
         , subscriptions = subscriptions
         }
-
-
-
