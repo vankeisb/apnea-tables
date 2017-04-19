@@ -26,22 +26,17 @@ type alias Model =
     { state : ModelState
     , fileId : String
     , authState : AuthState
-    , o2Tables : List O2TableDef
-    , co2Tables : List Co2TableDef
+    , tables : List TableDef
     , dirty : Bool
-    }
-
-type alias Co2TableDef =
-    { name : String
-    , hold : Int
-    , breaths : List Int
+    , counter : Int
     }
 
 
-type alias O2TableDef =
+type alias TableDef =
     { name : String
-    , holds : List Int
-    , breath : Int
+    , isO2 : Bool
+    , fixed : Int
+    , steps : List Int
     }
 
 
@@ -50,9 +45,9 @@ initialModel =
     { state = Fresh
     , fileId = ""
     , authState = AuthUnknown
-    , o2Tables = []
-    , co2Tables = []
+    , tables = []
     , dirty = False
+    , counter = 2
     }
 
 
@@ -66,5 +61,11 @@ type Msg
     | SaveOk
     | SaveError String
     | CreateTable Bool
-    | RemoveStepO2 String Int -- table name, step index
-    | AddStepO2 Bool String Int -- add before, table name, step index
+    | RemoveTable Int -- index
+    | RemoveStep String Int -- table name, step index
+    | AddStep Bool String Int -- add before, table name, step index
+
+
+type alias SerializedData =
+    { tables : List TableDef
+    }

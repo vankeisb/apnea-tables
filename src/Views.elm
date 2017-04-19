@@ -70,52 +70,67 @@ viewLoaded model =
             []
             [ text "Your tables" 
             ]
-        , div
-            []
-            (
-                if model.dirty then
-                    [ button
-                        [ onClick Save
-                        ]
-                        [ text "Save changes"
-                        ]
-                    ]
-                else
-                    []
-            )
-        , h2    
-            []
-            [ text "O2" 
-            ]
         , button
             [ onClick <| CreateTable True
             ]
             [ text "Add O2 table"
             ]
+        , button
+            [ onClick <| CreateTable False
+            ]
+            [ text "Add CO2 table"
+            ]
         ] ++
-        (
-            if List.isEmpty model.o2Tables then
-                [ div
-                    []
-                    [ text "No O2 tables defined"
+            (
+            if model.dirty then
+                [ button
+                    [ onClick Save
+                    ]
+                    [ text "Save changes"
+                    ]
+                , button
+                    [ onClick Reload
+                    ]
+                    [ text "Reload from drive"
                     ]
                 ]
             else
-                List.map viewO2Table model.o2Tables
-        )
+                []
+            ) ++
+            (
+            if List.isEmpty model.tables then
+                [ div
+                    []
+                    [ text "No tables defined"
+                    ]
+                ]
+            else
+                List.indexedMap viewTable model.tables
+            )
         )
 
 
-viewO2Table : O2TableDef -> Html Msg
-viewO2Table t =
+viewTable : Int -> TableDef -> Html Msg
+viewTable index t =
     div
         []
-        [ h3
+        [ hr [] []
+        , h3
             []
             [ input
                 [ value t.name
                 ]
                 []
+            , text <|
+                if t.isO2 then
+                    "(O2)"
+                else
+                    "(CO2)"
+            , button
+                [ onClick <| RemoveTable index
+                ]
+                [ text "Remove"
+                ]
             ]
         , table
             []
@@ -141,34 +156,46 @@ viewO2Table t =
                 ]
             , tbody
                 []
-                ( t.holds
+                ( t.steps
                     |> List.indexedMap (\index holdTime ->
                         tr
                             []
                             [ th
                                 []
-                                [ text <| toString index
+                                [ text <| toString (index + 1)
                                 ]
                             ,td
                                 []
-                                [ viewDuration holdTime
+                                [ viewDuration <|
+                                    if t.isO2 then
+                                        holdTime
+                                    else
+                                        t.fixed
                                 ]
                             , td
                                 []
-                                [ viewDuration t.breath
+                                [
+                                    if index < List.length t.steps - 1 then
+                                        viewDuration <|
+                                            if t.isO2 then
+                                                t.fixed
+                                            else
+                                                holdTime
+                                    else
+                                        text ""
                                 ]
                             , td
                                 []
                                 [ button
-                                    [ onClick <| RemoveStepO2 t.name index
+                                    [ onClick <| RemoveStep t.name index
                                     ]
                                     [ text "Remove" ]
                                 , button
-                                    [ onClick <| AddStepO2 True t.name index
+                                    [ onClick <| AddStep True t.name index
                                     ]
                                     [ text "Add before" ]
                                 , button
-                                    [ onClick <| AddStepO2 False t.name index
+                                    [ onClick <| AddStep False t.name index
                                     ]
                                     [ text "Add after" ]
                                 ]

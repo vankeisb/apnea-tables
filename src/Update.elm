@@ -42,30 +42,25 @@ update msg model =
                 )
 
         ReadFileOk res ->
-            ({ model | state = Loaded }, Cmd.none )
-            -- let
-            --     serializedData =
-            --         Json.Decode.decodeString Reader.serializedDataDecoder res.content
-            -- in
-            --     case serializedData of
-            --         Ok data ->
-            --             ( computeAllLogs
-            --                 { model
-            --                     | logs = data.logs
-            --                     , contractStart = data.contractStart
-            --                     , state = Loaded False
-            --                     , fileId = res.fileId
-            --                 }
-            --             , Cmd.none
-            --             )
-            --         Err e ->
-            --             ({ model
-            --                 | logs = []
-            --                 , contractStart = Date.fromTime 0
-            --                 , state = LoadError e
-            --             }
-            --             , Cmd.none
-            --             )
+             let
+                 serializedData =
+                     Json.Decode.decodeString Reader.serializedDataDecoder res.content
+             in
+                 case serializedData of
+                     Ok data ->
+                         ( { model
+                             | tables = data.tables
+                             , state = Loaded
+                             , fileId = res.fileId
+                         }
+                         , Cmd.none
+                         )
+                     Err e ->
+                         ({ model
+                             | state = LoadError e
+                         }
+                         , Cmd.none
+                         )
 
 
         ReadFileError err ->
@@ -79,6 +74,7 @@ update msg model =
         Reload ->
             ( { model
                 | state = Fresh
+                , dirty = False
             }
             , Drive.driveReadFile ()
             )
@@ -87,7 +83,9 @@ update msg model =
         Save ->
             let
                 fileContents =
-                    ""
+                    { tables = model.tables }
+                        |> Writer.encodeSerializedData
+                        |> Json.Encode.encode 4
 
                 saveCmd =
                     Drive.driveSaveFile
@@ -105,6 +103,7 @@ update msg model =
         SaveOk ->
             ( { model
                 | state = Loaded
+                , dirty = False
             }
             , Cmd.none
             )
@@ -120,45 +119,79 @@ update msg model =
 
         CreateTable isO2 ->
             let
-                o2Table =
-                    { name = "New table"
-                    , holds =
-                        List.range 1 8
-                            |> List.map (\i -> (i * 15) + 45)
-                    , breath = 120
-                    }
+                c =
+                    model.counter
+                        |> toString
+
+                tableName =
+                    "New table " ++ c
+
+                table =
+                    if isO2 then
+                        { name = tableName
+                        , isO2 = True
+                        , fixed = 120
+                        , steps =
+                            ( List.range 1 7
+                                |> List.map (\i -> (i * 15) + 30)
+                            ) ++ [ 135 ]
+                        }
+                    else
+                        { name = tableName
+                        , isO2 = False
+                        , fixed = 120
+                        , steps =
+                            List.range 1 8
+                                |> List.map (\i -> (i * 15) + 15)
+                                |> List.reverse
+                        }
             in
                 ({ model
-                    | o2Tables =
-                        o2Table :: model.o2Tables
+                    | tables =
+                        table :: model.tables
+                    , dirty = True
+                    , counter = model.counter + 1
+                }
+                , Cmd.none
+                )
+
+
+        RemoveTable index ->
+            let
+                newTables =
+                    model.tables
+                        |> removeFromList index
+            in
+                ({model
+                    | tables = newTables
                     , dirty = True
                 }
                 , Cmd.none
                 )
 
 
-        RemoveStepO2 tableName stepIndex ->
-            ( replaceO2Table
+        RemoveStep tableName stepIndex ->
+            ( replaceTable
                 model
                 tableName
                 (\t ->
                     { t
-                        | holds =
-                            t.holds
+                        | steps =
+                            t.steps
                                 |> removeFromList stepIndex
                     }
                 )
             , Cmd.none
             )
 
-        AddStepO2 before tableName stepIndex ->
-            ( replaceO2Table
+        AddStep before tableName stepIndex ->
+            ( replaceTable
                 model
                 tableName
                 (\t ->
                     { t
-                        | holds =
-                            t.holds
+                        | steps =
+                            t.steps
                                 |> insertIntoListAt
                                     (
                                         if before then
@@ -173,11 +206,11 @@ update msg model =
             )
 
 
-replaceO2Table : Model -> String -> (O2TableDef -> O2TableDef) -> Model
-replaceO2Table model tableName mapper =
+replaceTable : Model -> String -> (TableDef -> TableDef) -> Model
+replaceTable model tableName mapper =
     let
         newTables =
-            model.o2Tables
+            model.tables
                 |> List.map (\t ->
                     if t.name == tableName then
                         mapper t
@@ -186,7 +219,7 @@ replaceO2Table model tableName mapper =
                 )
     in
         { model
-            | o2Tables = newTables
+            | tables = newTables
             , dirty = True
         }
 

@@ -14,7 +14,7 @@ function gapi() {
 
 function withFile(callback, errback) {
     gapi().client.drive.files.list({
-        'q': "name='enounou.json'",
+        'q': "name='apnee.json'",
         'pageSize': 1,
         'fields': "nextPageToken, files(id, name, webContentLink)"
     }).then(function(response) {
@@ -23,7 +23,7 @@ function withFile(callback, errback) {
             var found = false;
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
-                if (file.name === 'enounou.json') {
+                if (file.name === 'apnee.json') {
                     found = true;
                     callback(file);
                     break;
