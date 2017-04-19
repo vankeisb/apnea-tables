@@ -111,7 +111,7 @@ viewLoaded model =
 
 
 viewTable : Int -> TableDef -> Html Msg
-viewTable index t =
+viewTable tableIndex t =
     div
         []
         [ hr [] []
@@ -119,6 +119,7 @@ viewTable index t =
             []
             [ input
                 [ value t.name
+                , onInput <| UpdateTableName tableIndex
                 ]
                 []
             , text <|
@@ -127,7 +128,7 @@ viewTable index t =
                 else
                     "(CO2)"
             , button
-                [ onClick <| RemoveTable index
+                [ onClick <| RemoveTable tableIndex
                 ]
                 [ text "Remove"
                 ]
@@ -187,15 +188,15 @@ viewTable index t =
                             , td
                                 []
                                 [ button
-                                    [ onClick <| RemoveStep t.name index
+                                    [ onClick <| RemoveStep tableIndex index
                                     ]
                                     [ text "Remove" ]
                                 , button
-                                    [ onClick <| AddStep True t.name index
+                                    [ onClick <| AddStep True tableIndex index
                                     ]
                                     [ text "Add before" ]
                                 , button
-                                    [ onClick <| AddStep False t.name index
+                                    [ onClick <| AddStep False tableIndex index
                                     ]
                                     [ text "Add after" ]
                                 ]

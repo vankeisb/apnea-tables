@@ -62,8 +62,9 @@ type Msg
     | SaveError String
     | CreateTable Bool
     | RemoveTable Int -- index
-    | RemoveStep String Int -- table name, step index
-    | AddStep Bool String Int -- add before, table name, step index
+    | RemoveStep Int Int -- table index, step index
+    | AddStep Bool Int Int -- add before, table index, step index
+    | UpdateTableName Int String -- index, new name
 
 
 type alias SerializedData =

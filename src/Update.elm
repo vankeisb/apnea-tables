@@ -73,7 +73,7 @@ update msg model =
 
         Reload ->
             ( { model
-                | state = Fresh
+                | state = Loading
                 , dirty = False
             }
             , Drive.driveReadFile ()
@@ -170,10 +170,10 @@ update msg model =
                 )
 
 
-        RemoveStep tableName stepIndex ->
+        RemoveStep tableIndex stepIndex ->
             ( replaceTable
                 model
-                tableName
+                tableIndex
                 (\t ->
                     { t
                         | steps =
@@ -184,10 +184,10 @@ update msg model =
             , Cmd.none
             )
 
-        AddStep before tableName stepIndex ->
+        AddStep before tableIndex stepIndex ->
             ( replaceTable
                 model
-                tableName
+                tableIndex
                 (\t ->
                     { t
                         | steps =
@@ -205,14 +205,22 @@ update msg model =
             , Cmd.none
             )
 
+        UpdateTableName index newName ->
+            ( replaceTable
+                model
+                index
+                (\t -> { t | name = newName })
+            , Cmd.none
+            )
 
-replaceTable : Model -> String -> (TableDef -> TableDef) -> Model
-replaceTable model tableName mapper =
+
+replaceTable : Model -> Int -> (TableDef -> TableDef) -> Model
+replaceTable model tableIndex mapper =
     let
         newTables =
             model.tables
-                |> List.map (\t ->
-                    if t.name == tableName then
+                |> List.indexedMap (\index t ->
+                    if tableIndex == index then
                         mapper t
                     else
                         t
