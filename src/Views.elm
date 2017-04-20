@@ -225,20 +225,14 @@ viewDuration msg seconds =
 viewRunData : RunData -> Html Msg
 viewRunData runData =
     let
+        { curStepIndex, curStepHold, curStepPercent } =
+            runData
+
         t =
             runData.table
 
-        (curStepIndex, curStepHold, curStepPercent) =
-            case runData.progressInfo of
-                Just pi ->
-                    (pi.curStepIndex, pi.curStepHold, pi.curStepPercent)
-                Nothing ->
-                    (-1, True, 0)
-
-
-
         rows =
-            runData.table.steps
+            t.steps
                 |> List.indexedMap (\index step ->
                     let
                         rowClass =
@@ -282,7 +276,6 @@ viewRunData runData =
                                         viewProgress curStepHold curStepPercent
                                     else
                                         text ""
---                                    viewProgress True 50
                                 ]
                             ]
                 )
@@ -291,7 +284,7 @@ viewRunData runData =
             []
             [ h1
                 []
-                [ text <| runData.table.name ]
+                [ text <| t.name ]
             , table
                 []
                 [ thead
@@ -322,7 +315,7 @@ viewRunData runData =
                 [ onClick StartStopTable
                 ]
                 [ text <|
-                    if runData.progressInfo == Nothing then
+                    if runData.startTime == Nothing then
                         "Start"
                     else
                         "Stop"

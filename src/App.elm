@@ -30,7 +30,7 @@ subscriptions model =
         ,
             case model.runData of
                 Just runData ->
-                    runData.progressInfo
+                    runData.startTime
                         |> Maybe.map (\pi -> Time.every Time.second Tick)
                         |> Maybe.withDefault Sub.none
                 Nothing ->

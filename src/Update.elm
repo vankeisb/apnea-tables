@@ -246,81 +246,80 @@ update msg model =
 
         Tick time ->
             withRunData model (\runData ->
-                let
-                    newProgressInfo =
-                        runData.progressInfo
-                            |> Maybe.map (\pi ->
-                                let
-                                    elapsed =
-                                        time - pi.startTime
-                                            |> Debug.log "elapsed"
+                case runData.startTime of
+                    Just startTime ->
+                        let
+                            elapsed =
+                                time - startTime
 
-                                    findStepIndex index steps total =
-                                        case steps of
-                                            first :: rest ->
+                            findStepIndex index steps total =
+                                case steps of
+                                    first :: rest ->
+                                        let
+                                            stepLen =
+                                                (runData.table.fixed + first) * 1000
+
+                                            stepStart =
+                                                total
+
+                                            stepEnd =
+                                                total + stepLen
+                                        in
+                                            if elapsed >= toFloat stepStart && elapsed < toFloat stepEnd then
                                                 let
-                                                    stepLen =
-                                                        (runData.table.fixed + first) * 1000
-                                                            |> Debug.log "stepLen"
-                                                    stepStart =
-                                                        total
-                                                            |> Debug.log "stepStart"
-                                                    stepEnd =
-                                                        total + stepLen
-                                                            |> Debug.log "stepEnd"
+                                                    stepHoldEnd =
+                                                        total +
+                                                            if runData.table.isO2 then
+                                                                first * 1000
+                                                            else
+                                                                runData.table.fixed * 1000
+                                                    hold =
+                                                        elapsed < toFloat stepHoldEnd
+
+                                                    stepDuration =
+                                                        toFloat <|
+                                                            if hold then
+                                                                stepHoldEnd - stepStart
+                                                            else
+                                                                stepEnd - stepHoldEnd
+
+                                                    stepElapsed =
+                                                        if hold then
+                                                            elapsed - (toFloat stepStart)
+                                                        else
+                                                            elapsed - (toFloat stepHoldEnd)
+
+                                                    percent =
+                                                        stepElapsed * 100 / stepDuration
                                                 in
-                                                    if elapsed >= toFloat stepStart && elapsed < toFloat stepEnd then
-                                                        let
-                                                            stepHoldEnd =
-                                                                total +
-                                                                    if runData.table.isO2 then
-                                                                        first * 1000
-                                                                    else
-                                                                        runData.table.fixed * 1000
-                                                            hold =
-                                                                elapsed < toFloat (Debug.log "stepHoldEnd" stepHoldEnd)
+                                                    ( index, hold, round percent)
+                                            else
+                                                findStepIndex (index + 1) rest (total + stepLen)
+                                    [] ->
+                                        (-1, True, 0)
 
-                                                            stepDuration =
-                                                                toFloat <|
-                                                                    if hold then
-                                                                        stepHoldEnd - stepStart
-                                                                    else
-                                                                        stepEnd - stepHoldEnd
-
-                                                            stepElapsed =
-                                                                if hold then
-                                                                    elapsed - (toFloat stepStart)
-                                                                else
-                                                                    elapsed - (toFloat stepHoldEnd)
-
-                                                            percent =
-                                                                stepElapsed * 100 / stepDuration
-                                                        in
-                                                            ( index, hold, round percent)
-                                                    else
-                                                        findStepIndex (index + 1) rest (total + stepLen)
-                                            [] ->
-                                                (-1, True, 0)
-
-                                    (newStepIndex, newStepHold, newStepPercent) =
-                                        findStepIndex 0 runData.table.steps 0
-                                            |> Debug.log "newStepIndex"
-                                in
-                                    { pi
-                                        | curStepIndex = newStepIndex
-                                        , curStepHold = newStepHold
-                                        , curStepPercent = newStepPercent
-                                    }
+                            (newStepIndex, newStepHold, newStepPercent) =
+                                findStepIndex 0 runData.table.steps 0
+                        in
+                            ( replaceRunData
+                                model
+                                { runData
+                                    | curTime = time
+                                    , curStepIndex = newStepIndex
+                                    , curStepHold = newStepHold
+                                    , curStepPercent = newStepPercent
+                                }
+                            , Cmd.none
                             )
-                in
-                    ( replaceRunData
-                        model
-                        { runData
-                            | curTime = time
-                            , progressInfo = newProgressInfo
-                        }
-                    , Cmd.none
-                    )
+
+                    Nothing ->
+                        ( replaceRunData
+                            model
+                            { runData
+                                | curTime = time
+                            }
+                        , Cmd.none
+                        )
             )
 
 
@@ -333,12 +332,12 @@ update msg model =
 
         StartStopTable ->
             withRunData model (\runData ->
-                case runData.progressInfo of
-                    Just progressInfo ->
+                case runData.startTime of
+                    Just startTime ->
                         ( replaceRunData
                             model
                             { runData
-                                | progressInfo = Nothing
+                                | startTime = Nothing
                             }
                         , Cmd.none
                         )
@@ -355,15 +354,10 @@ update msg model =
                 ( replaceRunData
                     model
                     { runData
-                        | progressInfo =
-                            Just
-                                { startTime = time
-                                , curStepIndex = 0
-                                , curStepHold = True
-                                , curStepPercent = 0
-                                }
-                                |> Debug.log "start"
-
+                        | startTime = Just time
+                        , curStepIndex = 0
+                        , curStepHold = True
+                        , curStepPercent = 0
                     }
                 , Cmd.none
                 )

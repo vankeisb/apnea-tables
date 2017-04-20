@@ -27,12 +27,7 @@ type AuthState
 type alias RunData =
     { table : TableDef
     , curTime : Time
-    , progressInfo : Maybe ProgressInfo
-    }
-
-
-type alias ProgressInfo =
-    { startTime : Time
+    , startTime : Maybe Time
     , curStepIndex : Int
     , curStepHold : Bool
     , curStepPercent : Int
@@ -71,7 +66,10 @@ initRunData : TableDef -> RunData
 initRunData table =
     { table = table
     , curTime = 0.0
-    , progressInfo = Nothing
+    , startTime = Nothing
+    , curStepIndex = -1
+    , curStepHold = False
+    , curStepPercent = 0
     }
 
 
