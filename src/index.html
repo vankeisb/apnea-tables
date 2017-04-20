@@ -56,10 +56,14 @@
                 discoveryDocs: DISCOVERY_DOCS,
                 clientId: CLIENT_ID,
                 scope: SCOPES
-            }).then(function () {
-                gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-                updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-            });
+            }).then(
+                function () {
+                    gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+                    updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+                },
+                function() {
+                    app.ports.driveOnAuthSystemFailure.send(null);
+                });
         }
 
         /**

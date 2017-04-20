@@ -27,6 +27,7 @@ subscriptions model =
         , Drive.driveOnAuthReady AuthReady
         , Drive.driveOnFileSave (\() -> SaveOk)
         , Drive.driveOnFileSaveError SaveError
+        , Drive.driveOnAuthSystemFailure (\() -> AuthSystemFailure)
         ,
             case model.runData of
                 Just runData ->

@@ -38,6 +38,13 @@ update msg model =
             , Cmd.none
             )
 
+        AuthSystemFailure ->
+            ( { model
+                | authState = AuthSystemFailed
+                , state = Ready
+            }, Cmd.none
+            )
+
         ReadFileOk res ->
             let
                 serializedData =

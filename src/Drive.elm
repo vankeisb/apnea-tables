@@ -28,3 +28,6 @@ port driveOnFileSaveError : (String -> m) -> Sub m
 
 
 port driveOnAuthReady : (Bool -> m) -> Sub m
+
+
+port driveOnAuthSystemFailure : (() -> m) -> Sub m

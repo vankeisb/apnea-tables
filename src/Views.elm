@@ -23,28 +23,6 @@ padding =
 viewBanner : Model -> Html Msg
 viewBanner model =
     let
-        loadBtn =
-            Button.render Mdl [0] model.mdl
-               [ Button.raised
-               , Options.onClick Reload
-               ]
-               [ text "Load from Drive"]
-
-        saveBtn =
-            Button.render Mdl [1] model.mdl
-               [ Button.raised
-               , Options.onClick Save
-               ]
-               [ text "Save changes to Drive"]
-
-        authBtn =
-            Button.render Mdl [2] model.mdl
-               [ Button.raised
-               , Options.onClick Authenticate
-               ]
-               [ text "Authenticate to load/save from drive"]
-
-
         i name =
             Icon.view name [ Options.css "width" "40px" ]
 
@@ -89,8 +67,13 @@ viewBanner model =
                             []
                     ) ++
                     addItems
+
+                AuthSystemFailed ->
+                    addItems
+
                 _ ->
                     [ authItem ] ++ addItems
+
     in
         Layout.row
             []

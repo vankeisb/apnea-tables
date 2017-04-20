@@ -23,6 +23,7 @@ type ModelState
 type AuthState
     = Authenticated
     | NotAuthenticated
+    | AuthSystemFailed
     | AuthUnknown
 
 
@@ -83,6 +84,7 @@ initRunData table =
 
 type Msg
     = AuthReady Bool
+    | AuthSystemFailure
     | Authenticate
     | ReadFileOk FileData
     | ReadFileError String
