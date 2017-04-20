@@ -145,7 +145,7 @@ viewBanner model =
                             ]
                         ]
             ] ++
-            [ Menu.render Mdl [4] model.mdl
+            [ Menu.render Mdl [3] model.mdl
                 [ Menu.ripple, Menu.bottomRight ]
                 menuItems
             ])
@@ -298,18 +298,36 @@ viewTable model tableIndex t =
                                         [ Options.css "border" "none"
                                         , Options.css "padding" "4px"
                                         ]
-                                        [ button
-                                            [ onClick <| RemoveStep tableIndex index
+                                        [ Button.render Mdl [2, tableIndex, 1] model.mdl
+                                            [ Button.icon
+                                            , Button.ripple
+                                            , Options.onClick <| RemoveStep tableIndex index
                                             ]
-                                            [ text "Remove" ]
-                                        , button
-                                            [ onClick <| AddStep True tableIndex index
+                                            [ Icon.i "close"]
+                                        , Button.render Mdl [2, tableIndex, 2] model.mdl
+                                            [ Button.icon
+                                            , Button.ripple
+                                            , Options.onClick <| AddStep True tableIndex index
                                             ]
-                                            [ text "Add before" ]
-                                        , button
-                                            [ onClick <| AddStep False tableIndex index
+                                            [ Icon.i "arrow_upward"]
+                                        , Button.render Mdl [2, tableIndex, 3] model.mdl
+                                            [ Button.icon
+                                            , Button.ripple
+                                            , Options.onClick <| AddStep False tableIndex index
                                             ]
-                                            [ text "Add after" ]
+                                            [ Icon.i "arrow_downward"]
+--                                        , button
+--                                            [ onClick <| RemoveStep tableIndex index
+--                                            ]
+--                                            [ text "Remove" ]
+--                                        , button
+--                                            [ onClick <| AddStep True tableIndex index
+--                                            ]
+--                                            [ text "Add before" ]
+--                                        , button
+--                                            [ onClick <| AddStep False tableIndex index
+--                                            ]
+--                                            [ text "Add after" ]
                                         ]
                                     ]
                             )
@@ -337,13 +355,13 @@ viewTable model tableIndex t =
                 ]
             , div
                 []
-                [ Button.render Mdl [10, tableIndex, 0] model.mdl
+                [ Button.render Mdl [3, tableIndex, 0] model.mdl
                   [ Button.icon
                   , Button.ripple
                   , Options.onClick <| RemoveTable tableIndex
                   ]
                   [ Icon.i "delete_forever" ]
-                , Button.render Mdl [10, tableIndex, 1] model.mdl
+                , Button.render Mdl [3, tableIndex, 1] model.mdl
                   [ Button.icon
                   , Button.ripple
                   , Options.onClick <| RunTable tableIndex
@@ -356,7 +374,7 @@ viewTable model tableIndex t =
 
 viewDuration : Model -> Int -> Int -> Bool -> Int -> Html Msg
 viewDuration model tableIndex stepIndex isFixed seconds =
-    Textfield.render Mdl [2, tableIndex , stepIndex + 1, if isFixed then 0 else 1] model.mdl
+    Textfield.render Mdl [3, tableIndex , stepIndex + 1, if isFixed then 0 else 1] model.mdl
         [ Textfield.label "Duration (seconds)"
         , Textfield.value <| toString seconds
         , Textfield.text_
