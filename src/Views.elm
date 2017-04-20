@@ -11,6 +11,13 @@ import Material.Textfield as Textfield
 import Material.Table as Table
 import Material.Menu as Menu
 import Material.Icon as Icon
+import Material.Card as Card
+import Material.Color as Color
+import Material.Typography as Typography
+import Material.Elevation as Elevation
+
+padding =
+    Options.css "padding-right" "24px"
 
 
 viewBanner : Model -> Html Msg
@@ -41,9 +48,6 @@ viewBanner model =
         i name =
             Icon.view name [ Options.css "width" "40px" ]
 
-        padding =
-            Options.css "padding-right" "24px"
-
 
         authItem =
             Menu.item
@@ -57,7 +61,7 @@ viewBanner model =
 
         saveItem =
             Menu.item
-                [ Menu.onSelect <| Authenticate, padding ]
+                [ Menu.onSelect <| Save, padding ]
                 [ i "cloud_upload", text "Save" ]
 
         addO2Item =
@@ -197,145 +201,168 @@ flexGrow =
 alignItemsInCenter =
     ("align-items", "center")
 
+white : Options.Property c m
+white =
+  Color.text Color.white
 
 viewTable : Model -> Int -> TableDef -> Html Msg
 viewTable model tableIndex t =
-    div
-        []
-        [ h2
-            [ class "tbl-head" ]
-            [ div
-                [ style
-                    [ displayFlex
-                    , alignItemsInCenter
-                    ]
+    Card.view
+        [ Options.css "width" "100%"
+        , Elevation.e4
+        , Options.css "margin-bottom" "2em"
+        ]
+        [ Card.title
+            [ Options.css "flex-direction" "row"
+            , Options.css "display" "flex"
+            ]
+            [ Card.head
+                [ Options.css "flex-grow" "1"
                 ]
-                [ div
-                    [ style
-                        [ flexGrow ]
+                [ Textfield.render Mdl [2, tableIndex, 0] model.mdl
+                    [ Textfield.label "Table name"
+                    , Textfield.value t.name
+                    , Textfield.text_
+                    , Options.onInput <| UpdateTableName tableIndex
+                    , Options.css "width" "100%"
                     ]
-                    [ Textfield.render Mdl [2, tableIndex, 0] model.mdl
-                        [ Textfield.label "Table name"
-                        , Textfield.value t.name
-                        , Textfield.text_
-                        , Options.onInput <| UpdateTableName tableIndex
-                        , Options.css "width" "100%"
-                        ]
-                        []
-                    ]
-                , div
                     []
-                    [ text <|
-                        (if t.isO2 then
-                            " (O2 - "
-                        else
-                            " (CO2 - "
-                        ) ++
-                        (formatTimeInterval <| totalDuration t) ++
-                        ")"
-                    ]
                 ]
             ]
-        , Table.table
-            [ Options.cs "tbl" ]
-            [ Table.thead
-                []
-                [ Table.tr
+        , Card.text
+            [ Options.css "width" "100%"
+            , Options.css "padding" "0"
+            ]
+            [ Table.table
+                [ Options.css "width" "100%"
+                , Options.css "border" "none"
+                , Options.css "background-color" "transparent"
+                ]
+                [ Table.thead
                     []
-                    [ Table.th
+                    [ Table.tr
                         []
-                        [ text "step" ]
-                    , Table.th
-                        []
-                        [ text "hold"
+                        [ Table.th
+                            [ Options.css "text-align" "center" ]
+                            [ text "step" ]
+                        , Table.th
+                            [ Options.css "text-align" "center" ]
+                            [ text "hold"
+                            ]
+                        , Table.th
+                            [ Options.css "text-align" "center" ]
+                            [ text "breathe"
+                            ]
+                        , Table.th
+                            []
+                            []
                         ]
-                    , Table.th
-                        []
-                        [ text "breathe"
-                        ]
-                    , Table.th
-                        []
-                        []
                     ]
+                , Table.tbody
+                    []
+                    (t.steps
+                        |> List.indexedMap
+                            (\index holdTime ->
+                                Table.tr
+                                    []
+                                    [ Table.td
+                                        [ Options.css "border" "none"
+                                        , Options.css "padding" "4px"
+                                        , Options.css "text-align" "center"
+                                        ]
+                                        [ text <| "#" ++ (toString (index + 1))
+                                        ]
+                                    , Table.td
+                                        [ Options.css "border" "none"
+                                        , Options.css "padding" "4px"
+                                        ]
+                                        [
+                                            if t.isO2 then
+                                                viewDuration model tableIndex index False holdTime
+                                            else
+                                                viewDuration model tableIndex index True t.fixed
+                                        ]
+                                    , Table.td
+                                        [ Options.css "border" "none"
+                                        , Options.css "padding" "4px"
+                                        ]
+                                        [ if index < List.length t.steps - 1 then
+                                            if t.isO2 then
+                                                viewDuration model tableIndex index True t.fixed
+                                            else
+                                                viewDuration model tableIndex index False holdTime
+                                          else
+                                            text ""
+                                        ]
+                                    , Table.td
+                                        [ Options.css "border" "none"
+                                        , Options.css "padding" "4px"
+                                        ]
+                                        [ button
+                                            [ onClick <| RemoveStep tableIndex index
+                                            ]
+                                            [ text "Remove" ]
+                                        , button
+                                            [ onClick <| AddStep True tableIndex index
+                                            ]
+                                            [ text "Add before" ]
+                                        , button
+                                            [ onClick <| AddStep False tableIndex index
+                                            ]
+                                            [ text "Add after" ]
+                                        ]
+                                    ]
+                            )
+                    )
                 ]
-            , Table.tbody
+            ]
+        , Card.actions
+            [ Card.border
+            -- Modify flexbox to accomodate small text in action block
+            , Options.css "display" "flex"
+            , Options.css "justify-content" "space-between"
+            , Options.css "align-items" "center"
+            , Options.css "padding" "8px 16px 8px 16px"
+            , Options.css "text-align" "right"
+            ]
+            [ Options.span
+                [ Typography.caption, Typography.contrast 0.87 ]
+                [ text <|
+                    (if t.isO2 then
+                        "O2"
+                    else
+                        "CO2"
+                    ) ++
+                    (" - " ++ (totalDuration t |> formatTimeInterval))
+                ]
+            , div
                 []
-                (t.steps
-                    |> List.indexedMap
-                        (\index holdTime ->
-                            Table.tr
-                                []
-                                [ Table.td
-                                    []
-                                    [ text <| "#" ++ (toString (index + 1))
-                                    ]
-                                , Table.td
-                                    []
-                                    [
-                                        if t.isO2 then
-                                            viewDuration model tableIndex index False holdTime
-                                        else
-                                            viewDuration model tableIndex index True t.fixed
-                                    ]
-                                , Table.td
-                                    []
-                                    [ if index < List.length t.steps - 1 then
-                                        if t.isO2 then
-                                            viewDuration model tableIndex index True t.fixed
-                                        else
-                                            viewDuration model tableIndex index False holdTime
-                                      else
-                                        text ""
-                                    ]
-                                , Table.td
-                                    []
-                                    [ button
-                                        [ onClick <| RemoveStep tableIndex index
-                                        ]
-                                        [ text "Remove" ]
-                                    , button
-                                        [ onClick <| AddStep True tableIndex index
-                                        ]
-                                        [ text "Add before" ]
-                                    , button
-                                        [ onClick <| AddStep False tableIndex index
-                                        ]
-                                        [ text "Add after" ]
-                                    ]
-                                ]
-                        )
-                )
+                [ Button.render Mdl [10, tableIndex, 0] model.mdl
+                  [ Button.icon
+                  , Button.ripple
+                  , Options.onClick <| RemoveTable tableIndex
+                  ]
+                  [ Icon.i "delete_forever" ]
+                , Button.render Mdl [10, tableIndex, 1] model.mdl
+                  [ Button.icon
+                  , Button.ripple
+                  , Options.onClick <| RunTable tableIndex
+                  ]
+                  [ Icon.i "alarm" ]
+                ]
             ]
-        , Button.render Mdl [2, tableIndex, 1] model.mdl
-            [ Button.raised
-            , Options.onClick <| RemoveTable tableIndex
-            ]
-            [ text "Remove"]
-        , Button.render Mdl [2, tableIndex, 3] model.mdl
-            [ Button.raised
-            , Options.onClick <| RunTable tableIndex
-            ]
-            [ text "Start training"]
-        , hr [] []
         ]
 
 
 viewDuration : Model -> Int -> Int -> Bool -> Int -> Html Msg
 viewDuration model tableIndex stepIndex isFixed seconds =
-    Textfield.render Mdl [3, tableIndex, stepIndex, if isFixed then 0 else 1] model.mdl
+    Textfield.render Mdl [2, tableIndex , stepIndex + 1, if isFixed then 0 else 1] model.mdl
         [ Textfield.label "Duration (seconds)"
         , Textfield.value <| toString seconds
         , Textfield.text_
         , Options.onInput <| UpdateTableField tableIndex stepIndex isFixed
-        , Options.css "width" "100%"
         ]
         []
---
---    input
---        [ value <| toString seconds
---        , onInput (UpdateTableField tableIndex stepIndex isFixed)
---        ]
---        []
 
 
 viewRunData : RunData -> Html Msg
