@@ -6,110 +6,130 @@ import Html.Attributes exposing (attribute, class, colspan, disabled, placeholde
 import Html.Events exposing (onClick, onInput)
 
 
+viewBanner : Model -> Html Msg
+viewBanner model =
+    let
+        loadSaveButtons =
+            case model.authState of
+                Authenticated ->
+                    div
+                        []
+                        ([ button
+                            [ onClick Reload
+                            ]
+                            [ text "Load from Drive"
+                            ]
+                        ] ++
+                            if model.dirty then
+                                [ button
+                                    [ onClick Save
+                                    ]
+                                    [ text "Save changes to Drive"
+                                    ]
+                                ]
+                            else
+                                []
+                        )
+                _ ->
+                    div
+                        []
+                        [ button
+                            [ onClick Authenticate
+                            ]
+                            [ text "Authenticate to load/save from drive"
+                            ]
+                        ]
+    in
+        div
+            []
+            [ case model.state of
+                Fresh ->
+                    text ""
+
+                Ready ->
+                    loadSaveButtons
+
+                Loading ->
+                    text "Loading..."
+
+                Loaded ->
+                    (
+                        if model.dirty then
+                            loadSaveButtons
+                        else
+                            text "Sync-ed with drive"
+                    )
+
+                LoadError err ->
+                    div
+                        []
+                        [ h3
+                            []
+                            [ text "Load error" ]
+                        , p
+                            []
+                            [ text err
+                            ]
+                        ]
+
+                Saving ->
+                    text "Saving..."
+
+                SavingError err ->
+                    div
+                        []
+                        [ h3
+                            []
+                            [ text "Saving error" ]
+                        , p
+                            []
+                            [ text err
+                            ]
+                        ]
+            ]
+
+
+
 view : Model -> Html Msg
 view model =
-    case model.authState of
-        NotAuthenticated ->
-            div
-                []
-                [ button
-                    [ onClick Authenticate
-                    ]
-                    [ text "Authenticate"
-                    ]
-                ]
+    case model.state of
+        Fresh ->
+            text "Starting..."
 
         _ ->
-            div
-                []
-                [ case model.state of
-                    Fresh ->
-                        text "Starting..."
+            case model.runData of
+                Just runData ->
+                    viewRunData runData
 
-                    Loading ->
-                        text "Loading..."
-
-                    Loaded ->
-                        viewLoaded model
-
-                    LoadError err ->
-                        div
+                Nothing ->
+                    div
+                        []
+                        ([ viewBanner model
+                         , h1
                             []
-                            [ h3
-                                []
-                                [ text "Load error" ]
-                            , p
-                                []
-                                [ text err
-                                ]
+                            [ text "Your tables"
                             ]
-
-                    Saving ->
-                        text "Saving..."
-
-                    SavingError err ->
-                        div
-                            []
-                            [ h3
-                                []
-                                [ text "Saving error" ]
-                            , p
-                                []
-                                [ text err
-                                ]
+                         , button
+                            [ onClick <| CreateTable True
                             ]
-                ]
-
-
-viewLoaded : Model -> Html Msg
-viewLoaded model =
-    case model.runData of
-        Just runData ->
-            viewRunData runData
-
-        Nothing ->
-            div
-                []
-                ([ h1
-                    []
-                    [ text "Your tables"
-                    ]
-                 , button
-                    [ onClick <| CreateTable True
-                    ]
-                    [ text "Add O2 table"
-                    ]
-                 , button
-                    [ onClick <| CreateTable False
-                    ]
-                    [ text "Add CO2 table"
-                    ]
-                 ]
-                    ++ (if model.dirty then
-                            [ button
-                                [ onClick Save
-                                ]
-                                [ text "Save changes"
-                                ]
-                            , button
-                                [ onClick Reload
-                                ]
-                                [ text "Reload from drive"
-                                ]
+                            [ text "Add O2 table"
                             ]
-                        else
-                            []
-                       )
-                    ++ (if List.isEmpty model.tables then
-                            [ div
-                                []
-                                [ text "No tables defined"
-                                ]
+                         , button
+                            [ onClick <| CreateTable False
                             ]
-                        else
-                            List.indexedMap viewTable model.tables
-                       )
-                )
+                            [ text "Add CO2 table"
+                            ]
+                         ]
+                            ++ (if List.isEmpty model.tables then
+                                    [ div
+                                        []
+                                        [ text "No tables defined"
+                                        ]
+                                    ]
+                                else
+                                    List.indexedMap viewTable model.tables
+                               )
+                        )
 
 
 viewTable : Int -> TableDef -> Html Msg

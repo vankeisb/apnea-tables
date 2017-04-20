@@ -11,6 +11,7 @@ type alias FileData =
 
 type ModelState
     = Fresh
+    | Ready
     | Loading
     | Loaded
     | LoadError String

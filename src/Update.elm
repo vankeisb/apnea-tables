@@ -22,23 +22,20 @@ update msg model =
             ( model, Drive.driveAuthenticate () )
 
         AuthReady authenticated ->
-            let
-                ( newState, loadCmd ) =
-                    if model.authState == AuthUnknown then
-                        ( Loading, Drive.driveReadFile () )
+            ( { model
+                | authState =
+                    if authenticated then
+                        Authenticated
                     else
-                        ( model.state, Cmd.none )
-            in
-                ( { model
-                    | authState =
-                        if authenticated then
-                            Authenticated
-                        else
-                            NotAuthenticated
-                    , state = newState
-                  }
-                , loadCmd
-                )
+                        NotAuthenticated
+                , state =
+                    if model.state == Fresh then
+                        Ready
+                    else
+                        model.state
+              }
+            , Cmd.none
+            )
 
         ReadFileOk res ->
             let
