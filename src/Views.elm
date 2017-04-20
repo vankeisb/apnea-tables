@@ -282,6 +282,7 @@ viewRunData runData =
                                         viewProgress curStepHold curStepPercent
                                     else
                                         text ""
+--                                    viewProgress True 50
                                 ]
                             ]
                 )
@@ -350,6 +351,11 @@ viewProgress hold percent =
             , style
                 [ ("width", (toString percent) ++ "%")
                 ]
+            ]
+            [ text ""
+            ]
+        , div
+            [ class "progress-label"
             ]
             [ text <|
                 if hold then
