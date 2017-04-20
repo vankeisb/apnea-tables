@@ -4,9 +4,21 @@
 
 .tbl-row {
 
+	&.past {
+		td {
+			text-decoration: line-through;
+		}
+	}
+
 	&.current {
 		td {
 			font-weight: bold;
+		}
+	}
+
+	&.future {
+		td {
+			color: grey;
 		}
 	}
 
@@ -16,6 +28,7 @@
 
 	width: 200px;
 	position: relative;
+	background-color: lightgrey;
 
 	.progress-bar {
 

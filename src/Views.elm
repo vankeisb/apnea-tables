@@ -243,11 +243,11 @@ viewRunData runData =
                     let
                         rowClass =
                             if curStepIndex < index then
-                                " past"
+                                " future"
                             else if curStepIndex == index then
                                 " current"
                             else
-                                " future"
+                                " past"
                     in
                         tr
                             [ class <| "tbl-row" ++ rowClass
