@@ -31,6 +31,8 @@ type alias RunData =
     , curStepIndex : Int
     , curStepHold : Bool
     , curStepPercent : Int
+    , stopTime : Maybe Time
+    , completed : Bool
     }
 
 type alias Model =
@@ -70,6 +72,8 @@ initRunData table =
     , curStepIndex = -1
     , curStepHold = False
     , curStepPercent = 0
+    , stopTime = Nothing
+    , completed = False
     }
 
 
@@ -96,14 +100,84 @@ type Msg
     | RunTable Int
     | Tick Time
     | BackToHome
-    | StartStopTable
+    | StartClicked
+    | StopClicked
     | StartTable Time
 
 
 
--- index
+isStoppedOrCompleted : RunData -> Bool
+isStoppedOrCompleted rd =
+    rd.completed || rd.stopTime /= Nothing
+
+
+isStarted : RunData -> Bool
+isStarted rd =
+    rd.startTime /= Nothing
+
+
+needsTick : RunData -> Bool
+needsTick rd =
+    isStarted rd && not (isStoppedOrCompleted rd)
+
+
+totalDuration : TableDef -> Time
+totalDuration t =
+    let
+        adder x y =
+            x + y + t.fixed
+
+        reversedSteps =
+            List.reverse t.steps
+
+        lastStep =
+            List.head reversedSteps
+                |> Maybe.withDefault 0
+
+        firstSteps =
+            reversedSteps
+                |> List.drop 1
+                |> List.reverse
+
+
+        firstStepsTotal =
+            firstSteps
+                |> List.foldl adder 0
+
+        lastStepTime =
+            if t.isO2 then
+                lastStep
+            else
+                t.fixed
+
+    in
+        toFloat <| (firstStepsTotal + lastStepTime) * 1000
 
 
 type alias SerializedData =
     { tables : List TableDef
     }
+
+
+formatTimeInterval : Time -> String
+formatTimeInterval duration =
+    let
+        secs =
+            duration / 1000
+
+        mm =
+            round (secs / 60)
+                |> toString
+                |> String.padLeft 2 '0'
+
+        ss =
+            (round secs) % 60
+                |> toString
+                |> String.padLeft 2 '0'
+    in
+        mm ++ ":" ++ ss
+
+
+formatSeconds : Int -> String
+formatSeconds secs =
+    formatTimeInterval <| toFloat (secs * 1000)

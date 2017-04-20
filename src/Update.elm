@@ -264,6 +264,7 @@ update msg model =
 
                                             stepEnd =
                                                 total + stepLen
+
                                         in
                                             if elapsed >= toFloat stepStart && elapsed < toFloat stepEnd then
                                                 let
@@ -291,14 +292,21 @@ update msg model =
 
                                                     percent =
                                                         stepElapsed * 100 / stepDuration
+
+                                                    isLastStep =
+                                                        List.isEmpty rest
+
+                                                    isCompleted =
+                                                        isLastStep && not hold
+
                                                 in
-                                                    ( index, hold, round percent)
+                                                    ( index, hold, round percent, isCompleted)
                                             else
                                                 findStepIndex (index + 1) rest (total + stepLen)
                                     [] ->
-                                        (-1, True, 0)
+                                        (-1, True, 0, False)
 
-                            (newStepIndex, newStepHold, newStepPercent) =
+                            (newStepIndex, newStepHold, newStepPercent, completed) =
                                 findStepIndex 0 runData.table.steps 0
                         in
                             ( replaceRunData
@@ -308,6 +316,7 @@ update msg model =
                                     , curStepIndex = newStepIndex
                                     , curStepHold = newStepHold
                                     , curStepPercent = newStepPercent
+                                    , completed = completed
                                 }
                             , Cmd.none
                             )
@@ -330,17 +339,14 @@ update msg model =
             Cmd.none
             )
 
-        StartStopTable ->
+        StartClicked ->
             withRunData model (\runData ->
                 case runData.startTime of
+
                     Just startTime ->
-                        ( replaceRunData
-                            model
-                            { runData
-                                | startTime = Nothing
-                            }
-                        , Cmd.none
-                        )
+                        -- already started...
+                        model ! []
+
                     Nothing ->
                         ( model
                         , Time.now
@@ -349,18 +355,37 @@ update msg model =
             )
 
 
+        StopClicked ->
+            withRunData model (\runData ->
+                case runData.startTime of
+                    Just startTime ->
+                        ( replaceRunData
+                            model
+                            { runData
+                                | stopTime = Just runData.curTime
+                            }
+                        , Cmd.none
+                        )
+
+                    Nothing ->
+                        -- not started
+                        model ! []
+            )
+
+
         StartTable time ->
             withRunData model (\runData ->
-                ( replaceRunData
-                    model
-                    { runData
-                        | startTime = Just time
-                        , curStepIndex = 0
-                        , curStepHold = True
-                        , curStepPercent = 0
-                    }
-                , Cmd.none
-                )
+                let
+                    newRunData =
+                        initRunData runData.table
+                in
+                    ( replaceRunData
+                        model
+                        { newRunData
+                            | startTime = Just time
+                        }
+                    , Cmd.none
+                    )
             )
 
 

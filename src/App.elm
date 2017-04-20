@@ -30,9 +30,10 @@ subscriptions model =
         ,
             case model.runData of
                 Just runData ->
-                    runData.startTime
-                        |> Maybe.map (\pi -> Time.every Time.second Tick)
-                        |> Maybe.withDefault Sub.none
+                    if needsTick runData then
+                        Time.every Time.second Tick
+                    else
+                        Sub.none
                 Nothing ->
                     Sub.none
         ]

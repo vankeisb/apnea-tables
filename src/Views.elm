@@ -135,6 +135,10 @@ viewTable tableIndex t =
                 [ text "Remove"
                 ]
             ]
+        , div
+            []
+            [ text <| "Duration : " ++ (formatTimeInterval <| totalDuration t)
+            ]
         , table
             []
             [ thead
@@ -225,7 +229,7 @@ viewDuration msg seconds =
 viewRunData : RunData -> Html Msg
 viewRunData runData =
     let
-        { curStepIndex, curStepHold, curStepPercent } =
+        { curStepIndex, curStepHold, curStepPercent, completed } =
             runData
 
         t =
@@ -235,56 +239,125 @@ viewRunData runData =
             t.steps
                 |> List.indexedMap (\index step ->
                     let
-                        rowClass =
-                            if curStepIndex < index then
-                                " future"
-                            else if curStepIndex == index then
-                                " current"
+                        p = "past"
+                        c = "current"
+                        f = "future"
+
+                        (timeClass, holdClass, breatheClass) =
+                            if completed then
+                                (p, p, p)
                             else
-                                " past"
+                                if curStepIndex < index then
+                                    (f, f, f)
+                                else if curStepIndex == index then
+                                    ( c
+                                    ,
+                                        if curStepHold then
+                                            c
+                                        else
+                                            p
+                                    ,
+                                        if curStepHold then
+                                            f
+                                        else
+                                            c
+                                    )
+                                else
+                                    (p, p, p)
+
                     in
                         tr
-                            [ class <| "tbl-row" ++ rowClass
+                            [ class "tbl-row"
                             ]
                             [ th
-                                []
+                                [ class timeClass ]
                                 [ text <| toString (index + 1)
                                 ]
                             , td
-                                []
-                                [ text <| toString <|
+                                [ class holdClass ]
+                                [ text <| formatSeconds <|
                                     if t.isO2 then
                                         step
                                     else
                                         t.fixed
                                 ]
                             , td
-                                []
+                                [ class breatheClass ]
                                 [ if index < List.length t.steps - 1 then
-                                    text <| toString <|
+                                    text <| formatSeconds <|
                                         if t.isO2 then
                                             t.fixed
                                         else
                                             step
                                   else
-                                    text ""
+                                    text "-"
                                 ]
                             , td
                                 []
                                 [
-                                    if curStepIndex == index then
+                                    if not completed && curStepIndex == index then
                                         viewProgress curStepHold curStepPercent
                                     else
-                                        text ""
+                                        viewProgressEmpty
                                 ]
                             ]
                 )
+
+        buttons =
+            if isStoppedOrCompleted runData then
+                []
+            else
+                if isStarted runData then
+                    [ button
+                        [ onClick StopClicked
+                        ]
+                        [ text "Stop !!!"
+                        ]
+                    ]
+                else
+                    [ button
+                        [ onClick StartClicked
+                        ]
+                        [ text "Start"
+                        ]
+                    ]
+
+        headElems =
+            if runData.completed then
+                [ p
+                    []
+                    [ text "Congrats, you made it !"
+                    ]
+                ]
+            else
+                if runData.stopTime /= Nothing then
+                    [ p
+                        []
+                        [ text "Stopped !" ]
+                    ]
+                else
+                    if isStarted runData then
+                        [ p
+                            []
+                            [ text "In progress..."
+                            ]
+                        ]
+                    else
+                        []
     in
         div
             []
             [ h1
                 []
-                [ text <| t.name ]
+                [ text <| t.name ++
+                    if t.isO2 then
+                        " (O2)"
+                    else
+                        " (CO2)"
+                ]
+            , div
+                []
+                headElems
             , table
                 []
                 [ thead
@@ -311,15 +384,9 @@ viewRunData runData =
                     []
                     rows
                 ]
-            , button
-                [ onClick StartStopTable
-                ]
-                [ text <|
-                    if runData.startTime == Nothing then
-                        "Start"
-                    else
-                        "Stop"
-                ]
+            , div
+                []
+                buttons
             , hr [] []
             , button
                 [ onClick BackToHome
@@ -327,6 +394,13 @@ viewRunData runData =
                 [ text "Back to home"
                 ]
             ]
+
+
+viewProgressEmpty =
+    div
+        [ class "progress"
+        ]
+        []
 
 
 viewProgress : Bool -> Int -> Html Msg

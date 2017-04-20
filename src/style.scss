@@ -4,22 +4,20 @@
 
 .tbl-row {
 
-	&.past {
-		td {
-			text-decoration: line-through;
-		}
+	.past {
+		text-decoration: line-through;
 	}
 
-	&.current {
-		td {
-			font-weight: bold;
-		}
+	.current {
+		font-weight: bold;
 	}
 
-	&.future {
-		td {
-			color: grey;
-		}
+	.future {
+		color: grey;
+	}
+
+	td {
+		text-align: center;
 	}
 
 }
