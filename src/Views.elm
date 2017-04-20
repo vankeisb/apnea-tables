@@ -96,7 +96,7 @@ viewBanner model =
             []
             ([ Layout.title
                 []
-                [ text "Apnea"
+                [ text "Apnea tables"
                 ]
             , Layout.spacer
             ] ++
@@ -161,7 +161,7 @@ view model =
         _ ->
             case model.runData of
                 Just runData ->
-                    viewRunData runData
+                    viewRunData model runData
 
                 Nothing ->
                     Layout.render Mdl model.mdl
@@ -173,14 +173,10 @@ view model =
                       , main =
                             [ div
                                 [ class "main-content" ]
-                                ([ h1
-                                    []
-                                    [ text "Your tables"
-                                    ]
-                                 ] ++
+                                (
                                     if List.isEmpty model.tables then
-                                        [ p
-                                            []
+                                        [ Options.styled p
+                                            [ Typography.headline ]
                                             [ text "You have no tables. Load from drive, or create a new table..." ]
                                         ]
                                     else
@@ -354,7 +350,7 @@ viewTable model tableIndex t =
                   , Button.ripple
                   , Options.onClick <| RunTable tableIndex
                   ]
-                  [ Icon.i "alarm" ]
+                  [ Icon.i "play_arrow" ]
                 ]
             ]
         ]
@@ -366,13 +362,14 @@ viewDuration model tableIndex stepIndex isFixed seconds =
         [ Textfield.label "Duration (seconds)"
         , Textfield.value <| toString seconds
         , Textfield.text_
+        , Options.css "width" "100%"
         , Options.onInput <| UpdateTableField tableIndex stepIndex isFixed
         ]
         []
 
 
-viewRunData : RunData -> Html Msg
-viewRunData runData =
+viewRunData : Model -> RunData -> Html Msg
+viewRunData model runData =
     let
         { curStepIndex, curStepHold, curStepPercent, completed } =
             runData
@@ -453,92 +450,111 @@ viewRunData runData =
                 []
             else
                 if isStarted runData then
-                    [ button
-                        [ onClick StopClicked
-                        ]
-                        [ text "Stop !!!"
-                        ]
+                    [ Button.render Mdl [101] model.mdl
+                       [ Button.icon
+                       , Options.onClick StopClicked
+                       ]
+                       [ Icon.i "stop"]
                     ]
                 else
-                    [ button
-                        [ onClick StartClicked
-                        ]
-                        [ text "Start"
-                        ]
+                    [ Button.render Mdl [102] model.mdl
+                       [ Button.icon
+                       , Options.onClick StartClicked
+                       ]
+                       [ Icon.i "play_arrow"]
                     ]
 
         headElems =
             if runData.completed then
-                [ p
-                    []
-                    [ text "Congrats, you made it !"
+                [ Options.styled p
+                    [ Typography.headline
+                    , Options.css "margin-top" "1em"
                     ]
+                    [ text "Congrats, you made it !" ]
                 ]
             else
                 if runData.stopTime /= Nothing then
-                    [ p
-                        []
-                        [ text "Stopped !" ]
+                    [ Options.styled p
+                        [ Typography.headline
+                        , Options.css "margin-top" "1em"
+                        ]
+                        [ text "Sopped !" ]
                     ]
                 else
                     if isStarted runData then
-                        [ p
-                            []
-                            [ text "In progress..."
+                        [ Options.styled p
+                            [ Typography.headline
+                            , Options.css "margin-top" "1em"
                             ]
+                            [ text "In progress..." ]
                         ]
                     else
                         []
     in
-        div
-            []
-            [ h1
-                []
-                [ text <| t.name ++
-                    if t.isO2 then
-                        " (O2)"
-                    else
-                        " (CO2)"
-                ]
-            , div
-                []
-                headElems
-            , table
-                []
-                [ thead
+        Layout.render Mdl model.mdl
+            [ Layout.fixedHeader
+            ]
+            { header =
+                [ Layout.row
                     []
-                    [ tr
+                    ([ Button.render Mdl [100] model.mdl
+                       [ Button.icon
+                       , Options.onClick BackToHome
+                       ]
+                       [ Icon.i "arrow_back"]
+                    , Layout.title
                         []
-                        [ th
-                            []
-                            [ text "step" ]
-                        , th
-                            []
-                            [ text "hold"
+                        [ text <| t.name ++
+                            if t.isO2 then
+                                " (O2)"
+                            else
+                                " (CO2)"
+                        ]
+                    , Layout.spacer
+                    ] ++ buttons
+                    )
+                ]
+            , drawer = []
+            , tabs = ([], [])
+            , main =
+                [ div
+                    [ class "main-content" ]
+                    [ div
+                        []
+                        headElems
+                    , table
+                        [ style
+                            [ ("width", "100%")
                             ]
-                        , th
+                        ]
+                        [ thead
                             []
-                            [ text "breathe"
+                            [ tr
+                                []
+                                [ th
+                                    []
+                                    [ text "step" ]
+                                , th
+                                    []
+                                    [ text "hold"
+                                    ]
+                                , th
+                                    []
+                                    [ text "breathe"
+                                    ]
+                                , th
+                                    []
+                                    [ text "progress" ]
+                                ]
                             ]
-                        , th
+                        , tbody
                             []
-                            [ text "progress" ]
+                            rows
                         ]
                     ]
-                , tbody
-                    []
-                    rows
                 ]
-            , div
-                []
-                buttons
-            , hr [] []
-            , button
-                [ onClick BackToHome
-                ]
-                [ text "Back to home"
-                ]
-            ]
+          }
+
 
 
 viewProgressEmpty =

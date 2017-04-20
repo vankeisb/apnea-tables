@@ -25,7 +25,7 @@
 
 	.progress {
 
-		width: 200px;
+		width: 100%;
 		position: relative;
 		background-color: lightgrey;
 
@@ -61,6 +61,7 @@
 	.main-content {
 		padding-left: 8%;
 		padding-right: 8%;
+		padding-top: 1em;
 	}
 
 	.tbl {
