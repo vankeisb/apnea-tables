@@ -316,18 +316,6 @@ viewTable model tableIndex t =
                                             , Options.onClick <| AddStep False tableIndex index
                                             ]
                                             [ Icon.i "arrow_downward"]
---                                        , button
---                                            [ onClick <| RemoveStep tableIndex index
---                                            ]
---                                            [ text "Remove" ]
---                                        , button
---                                            [ onClick <| AddStep True tableIndex index
---                                            ]
---                                            [ text "Add before" ]
---                                        , button
---                                            [ onClick <| AddStep False tableIndex index
---                                            ]
---                                            [ text "Add after" ]
                                         ]
                                     ]
                             )

@@ -171,12 +171,12 @@ formatTimeInterval duration =
             duration / 1000
 
         mm =
-            round (secs / 60)
+            floor (secs / 60)
                 |> toString
                 |> String.padLeft 2 '0'
 
         ss =
-            (round secs) % 60
+            (floor secs) % 60
                 |> toString
                 |> String.padLeft 2 '0'
     in
