@@ -4,6 +4,7 @@ import Date
 import Drive
 import Json.Decode
 import Json.Encode
+import Material
 import Models exposing (..)
 import Task
 import Reader
@@ -384,6 +385,10 @@ update msg model =
                     , Cmd.none
                     )
             )
+
+         -- Boilerplate: Mdl action handler.
+        Mdl msg_ ->
+            Material.update Mdl msg_ model
 
 
 replaceRunData model runData =

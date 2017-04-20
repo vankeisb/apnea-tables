@@ -1,58 +1,87 @@
-.foo {
-	color : red;
-}
 
-.tbl-row {
 
-	.past {
-		text-decoration: line-through;
-	}
+#main {
 
-	.current {
-		font-weight: bold;
-	}
+	.tbl-row {
 
-	.future {
-		color: grey;
-	}
-
-	td {
-		text-align: center;
-	}
-
-}
-
-.progress {
-
-	width: 200px;
-	position: relative;
-	background-color: lightgrey;
-
-	.progress-bar {
-
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		opacity: 0.5;
-
-		&.hold {
-			background-color: red;
-			color : red;
+		.past {
+			text-decoration: line-through;
 		}
 
-		&.breathe {
-			background-color: green;
-			color : green;
+		.current {
+			font-weight: bold;
+		}
+
+		.future {
+			color: grey;
+		}
+
+		td {
+			text-align: center;
 		}
 
 	}
 
-	.progress-label {
+	.tbl-head {
+		.mdl-textfield__input {
+			font-size: 45px;
+		}
+	}
+
+
+	.progress {
+
+		width: 200px;
+		position: relative;
+		background-color: lightgrey;
+
+		.progress-bar {
+
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			opacity: 0.5;
+
+			&.hold {
+				background-color: red;
+				color : red;
+			}
+
+			&.breathe {
+				background-color: green;
+				color : green;
+			}
+
+		}
+
+		.progress-label {
+			width: 100%;
+			background-color: transparent;
+			color : black;
+			text-align: center;
+		}
+
+	}
+
+	.main-content {
+		padding-left: 8%;
+		padding-right: 8%;
+	}
+
+	.tbl {
 		width: 100%;
-		background-color: transparent;
-		color : black;
-		text-align: center;
+		border: none;
+
+		td {
+			border: none;
+
+			.mdl-textfield {
+				padding: 0;
+			}
+
+		}
 	}
 
 }
+

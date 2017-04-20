@@ -7,6 +7,29 @@
 <body>
     <div id="main">Loading...</div>
 
+    <!-- MDL
+             The library relies on Google's Material Design fonts, icons, and the CSS
+             of Google's Material Design Lite implementation. Load these as follows.
+           -->
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.cyan-light_blue.min.css" />
+
+    <!-- Dialogs
+         The Dialog component requires a polyfill on most browsers. If your app
+         uses Dialogs and is expected to work outside Google Chrome, get the
+         polyfill at the URL below and load as follows.
+         https://github.com/GoogleChrome/dialog-polyfill
+       -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.4/dialog-polyfill.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.4/dialog-polyfill.min.css" />
+
+    <!-- Event.focusin
+         Polyfill required for Firefox to support focusin and focusout events
+       -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.js?features=Event.focusin"></script>
+
+
     <script type="text/javascript">
         // Client ID and API key from the Developer Console
         var CLIENT_ID = '547461291507-1t5hkfgph4f339bgdbppvklsrd9ki72e.apps.googleusercontent.com';

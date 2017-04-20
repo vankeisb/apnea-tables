@@ -4,50 +4,104 @@ import Models exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, colspan, disabled, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Material.Button as Button
+import Material.Options as Options
+import Material.Layout as Layout
+import Material.Textfield as Textfield
+import Material.Table as Table
+import Material.Menu as Menu
+import Material.Icon as Icon
 
 
 viewBanner : Model -> Html Msg
 viewBanner model =
     let
-        loadSaveButtons =
+        loadBtn =
+            Button.render Mdl [0] model.mdl
+               [ Button.raised
+               , Options.onClick Reload
+               ]
+               [ text "Load from Drive"]
+
+        saveBtn =
+            Button.render Mdl [1] model.mdl
+               [ Button.raised
+               , Options.onClick Save
+               ]
+               [ text "Save changes to Drive"]
+
+        authBtn =
+            Button.render Mdl [2] model.mdl
+               [ Button.raised
+               , Options.onClick Authenticate
+               ]
+               [ text "Authenticate to load/save from drive"]
+
+
+        i name =
+            Icon.view name [ Options.css "width" "40px" ]
+
+        padding =
+            Options.css "padding-right" "24px"
+
+
+        authItem =
+            Menu.item
+                [ Menu.onSelect <| Authenticate, padding ]
+                [ i "account_circle", text "Authenticate" ]
+
+        loadItem =
+            Menu.item
+                [ Menu.onSelect <| Reload, padding ]
+                [ i "cloud_download", text "Load" ]
+
+        saveItem =
+            Menu.item
+                [ Menu.onSelect <| Authenticate, padding ]
+                [ i "cloud_upload", text "Save" ]
+
+        addO2Item =
+            Menu.item
+                [ Menu.onSelect <| CreateTable True, padding ]
+                [ i "playlist_add", text "O2" ]
+
+        addCO2Item =
+            Menu.item
+                [ Menu.onSelect <| CreateTable False, padding ]
+                [ i "playlist_add", text "CO2" ]
+
+        addItems =
+            [ addO2Item, addCO2Item ]
+
+        menuItems =
             case model.authState of
                 Authenticated ->
-                    div
-                        []
-                        ([ button
-                            [ onClick Reload
+                    ([ loadItem
+                    ] ++
+                        if model.dirty then
+                            [ saveItem
                             ]
-                            [ text "Load from Drive"
-                            ]
-                        ] ++
-                            if model.dirty then
-                                [ button
-                                    [ onClick Save
-                                    ]
-                                    [ text "Save changes to Drive"
-                                    ]
-                                ]
-                            else
-                                []
-                        )
+                        else
+                            []
+                    ) ++
+                    addItems
                 _ ->
-                    div
-                        []
-                        [ button
-                            [ onClick Authenticate
-                            ]
-                            [ text "Authenticate to load/save from drive"
-                            ]
-                        ]
+                    [ authItem ] ++ addItems
     in
-        div
+        Layout.row
             []
+            ([ Layout.title
+                []
+                [ text "Apnea"
+                ]
+            , Layout.spacer
+            ] ++
             [ case model.state of
                 Fresh ->
                     text ""
 
                 Ready ->
-                    loadSaveButtons
+                    text ""
 
                 Loading ->
                     text "Loading..."
@@ -55,7 +109,7 @@ viewBanner model =
                 Loaded ->
                     (
                         if model.dirty then
-                            loadSaveButtons
+                            text ""
                         else
                             text "Sync-ed with drive"
                     )
@@ -86,7 +140,11 @@ viewBanner model =
                             [ text err
                             ]
                         ]
-            ]
+            ] ++
+            [ Menu.render Mdl [4] model.mdl
+                [ Menu.ripple, Menu.bottomRight ]
+                menuItems
+            ])
 
 
 
@@ -102,115 +160,134 @@ view model =
                     viewRunData runData
 
                 Nothing ->
-                    div
-                        []
-                        ([ viewBanner model
-                         , h1
-                            []
-                            [ text "Your tables"
-                            ]
-                         , button
-                            [ onClick <| CreateTable True
-                            ]
-                            [ text "Add O2 table"
-                            ]
-                         , button
-                            [ onClick <| CreateTable False
-                            ]
-                            [ text "Add CO2 table"
-                            ]
-                         ]
-                            ++ (if List.isEmpty model.tables then
-                                    [ div
-                                        []
-                                        [ text "No tables defined"
-                                        ]
+                    Layout.render Mdl model.mdl
+                      [ Layout.fixedHeader
+                      ]
+                      { header = [ viewBanner model ]
+                      , drawer = []
+                      , tabs = ([], [])
+                      , main =
+                            [ div
+                                [ class "main-content" ]
+                                ([ h1
+                                    []
+                                    [ text "Your tables"
                                     ]
-                                else
-                                    List.indexedMap viewTable model.tables
-                               )
-                        )
+                                 ] ++
+                                    if List.isEmpty model.tables then
+                                        [ p
+                                            []
+                                            [ text "You have no tables. Load from drive, or create a new table..." ]
+                                        ]
+                                    else
+                                        List.indexedMap (viewTable model) model.tables
+
+                                )
+                            ]
+                      }
 
 
-viewTable : Int -> TableDef -> Html Msg
-viewTable tableIndex t =
+
+displayFlex =
+    ("display", "flex")
+
+flexGrow =
+    ("flex-grow", "1")
+
+alignItemsInCenter =
+    ("align-items", "center")
+
+
+viewTable : Model -> Int -> TableDef -> Html Msg
+viewTable model tableIndex t =
     div
         []
-        [ hr [] []
-        , h3
-            []
-            [ input
-                [ value t.name
-                , onInput <| UpdateTableName tableIndex
+        [ h2
+            [ class "tbl-head" ]
+            [ div
+                [ style
+                    [ displayFlex
+                    , alignItemsInCenter
+                    ]
                 ]
-                []
-            , text <|
-                if t.isO2 then
-                    "(O2)"
-                else
-                    "(CO2)"
-            , button
-                [ onClick <| RemoveTable tableIndex
-                ]
-                [ text "Remove"
-                ]
-            ]
-        , div
-            []
-            [ text <| "Duration : " ++ (formatTimeInterval <| totalDuration t)
-            ]
-        , table
-            []
-            [ thead
-                []
-                [ tr
+                [ div
+                    [ style
+                        [ flexGrow ]
+                    ]
+                    [ Textfield.render Mdl [2, tableIndex, 0] model.mdl
+                        [ Textfield.label "Table name"
+                        , Textfield.value t.name
+                        , Textfield.text_
+                        , Options.onInput <| UpdateTableName tableIndex
+                        , Options.css "width" "100%"
+                        ]
+                        []
+                    ]
+                , div
                     []
-                    [ th
+                    [ text <|
+                        (if t.isO2 then
+                            " (O2 - "
+                        else
+                            " (CO2 - "
+                        ) ++
+                        (formatTimeInterval <| totalDuration t) ++
+                        ")"
+                    ]
+                ]
+            ]
+        , Table.table
+            [ Options.cs "tbl" ]
+            [ Table.thead
+                []
+                [ Table.tr
+                    []
+                    [ Table.th
                         []
                         [ text "step" ]
-                    , th
+                    , Table.th
                         []
                         [ text "hold"
                         ]
-                    , th
+                    , Table.th
                         []
                         [ text "breathe"
                         ]
-                    , th
+                    , Table.th
                         []
                         []
                     ]
                 ]
-            , tbody
+            , Table.tbody
                 []
                 (t.steps
                     |> List.indexedMap
                         (\index holdTime ->
-                            tr
+                            Table.tr
                                 []
-                                [ th
+                                [ Table.td
                                     []
-                                    [ text <| toString (index + 1)
+                                    [ text <| "#" ++ (toString (index + 1))
                                     ]
-                                , td
+                                , Table.td
                                     []
                                     [
                                         if t.isO2 then
-                                            viewDuration (UpdateTableField tableIndex index False) holdTime
+                                            viewDuration model tableIndex index False holdTime
                                         else
-                                            viewDuration (UpdateTableField tableIndex index True) t.fixed
+                                            viewDuration model tableIndex index True t.fixed
                                     ]
-                                , td
+                                , Table.td
                                     []
                                     [ if index < List.length t.steps - 1 then
                                         if t.isO2 then
-                                            viewDuration (UpdateTableField tableIndex index True) t.fixed
+                                            viewDuration model tableIndex index True t.fixed
                                         else
-                                            viewDuration (UpdateTableField tableIndex index False) holdTime
+                                            viewDuration model tableIndex index False holdTime
                                       else
                                         text ""
                                     ]
-                                , td
+                                , Table.td
                                     []
                                     [ button
                                         [ onClick <| RemoveStep tableIndex index
@@ -229,21 +306,36 @@ viewTable tableIndex t =
                         )
                 )
             ]
-        , button
-            [ onClick <| RunTable tableIndex
+        , Button.render Mdl [2, tableIndex, 1] model.mdl
+            [ Button.raised
+            , Options.onClick <| RemoveTable tableIndex
             ]
-            [ text "Run this table"
+            [ text "Remove"]
+        , Button.render Mdl [2, tableIndex, 3] model.mdl
+            [ Button.raised
+            , Options.onClick <| RunTable tableIndex
             ]
+            [ text "Start training"]
+        , hr [] []
         ]
 
 
-viewDuration : (String -> Msg) -> Int -> Html Msg
-viewDuration msg seconds =
-    input
-        [ value <| toString seconds
-        , onInput msg
+viewDuration : Model -> Int -> Int -> Bool -> Int -> Html Msg
+viewDuration model tableIndex stepIndex isFixed seconds =
+    Textfield.render Mdl [3, tableIndex, stepIndex, if isFixed then 0 else 1] model.mdl
+        [ Textfield.label "Duration (seconds)"
+        , Textfield.value <| toString seconds
+        , Textfield.text_
+        , Options.onInput <| UpdateTableField tableIndex stepIndex isFixed
+        , Options.css "width" "100%"
         ]
         []
+--
+--    input
+--        [ value <| toString seconds
+--        , onInput (UpdateTableField tableIndex stepIndex isFixed)
+--        ]
+--        []
 
 
 viewRunData : RunData -> Html Msg

@@ -1,5 +1,6 @@
 module Models exposing (..)
 
+import Material
 import Time exposing (Time)
 
 
@@ -43,6 +44,7 @@ type alias Model =
     , tables : List TableDef
     , dirty : Bool
     , runData : Maybe RunData
+    , mdl : Material.Model
     }
 
 
@@ -62,6 +64,7 @@ initialModel =
     , tables = []
     , dirty = False
     , runData = Nothing
+    , mdl = Material.model
     }
 
 
@@ -104,6 +107,7 @@ type Msg
     | StartClicked
     | StopClicked
     | StartTable Time
+    | Mdl (Material.Msg Msg)
 
 
 
@@ -182,3 +186,4 @@ formatTimeInterval duration =
 formatSeconds : Int -> String
 formatSeconds secs =
     formatTimeInterval <| toFloat (secs * 1000)
+
