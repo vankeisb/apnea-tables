@@ -15,7 +15,7 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Typography as Typography
 import Material.Elevation as Elevation
-
+import Material.Progress as Loading
 
 padding =
     Options.css "padding-right" "24px"
@@ -75,7 +75,9 @@ viewBanner model =
                     [ authItem ] ++ addItems
     in
         Layout.row
-            [ Options.css "padding-left" "40px" ]
+            [ Options.css "padding-left" "16px"
+            , Options.css "padding-right" "16px"
+            ]
             ([ Layout.title
                 []
                 [ text "Apnea tables"
@@ -100,16 +102,7 @@ viewBanner model =
                             )
 
                         LoadError err ->
-                            div
-                                []
-                                [ h3
-                                    []
-                                    [ text "Load error" ]
-                                , p
-                                    []
-                                    [ text err
-                                    ]
-                                ]
+                            text "Load error !!"
 
                         Saving ->
                             text "Saving..."
@@ -258,11 +251,13 @@ viewTable model tableIndex t =
                         [ Button.render Mdl
                             [ 3, tableIndex, 1 ]
                             model.mdl
-                            [ Button.raised
+                            [ Button.colored
+                            , Button.fab
                             , Button.ripple
+                            , Button.icon
                             , Options.onClick <| RunTable tableIndex
                             ]
-                            [ text "Start training" ]
+                            [ Icon.i "play_arrow" ]
                         ]
                     ]
                 ]
@@ -424,7 +419,7 @@ viewRunData model runData =
                                 ]
                                 [ th
                                     [ class timeClass ]
-                                    [ text <| toString (index + 1)
+                                    [ text <| "#" ++ (toString (index + 1))
                                     ]
                                 , td
                                     [ class holdClass ]
@@ -457,27 +452,31 @@ viewRunData model runData =
                                 ]
                     )
 
-        buttons =
-            if isStoppedOrCompleted runData then
-                []
-            else if isStarted runData then
-                [ Button.render Mdl
-                    [ 101 ]
-                    model.mdl
-                    [ Button.icon
-                    , Options.onClick StopClicked
-                    ]
-                    [ Icon.i "stop" ]
+
+        btnStop =
+            Button.render Mdl
+                [ 101 ]
+                model.mdl
+                [ Button.fab
+                , Button.colored
+                , Button.ripple
+                , Button.icon
+                , Options.onClick StopClicked
                 ]
-            else
-                [ Button.render Mdl
-                    [ 102 ]
-                    model.mdl
-                    [ Button.icon
-                    , Options.onClick StartClicked
-                    ]
-                    [ Icon.i "play_arrow" ]
+                [ Icon.i "stop" ]
+
+        btnStart =
+            Button.render Mdl
+                [ 102 ]
+                model.mdl
+                [ Button.fab
+                , Button.colored
+                , Button.ripple
+                , Button.icon
+                , Options.onClick StartClicked
                 ]
+                [ Icon.i "play_arrow" ]
+
 
         headElems =
             if runData.completed then
@@ -495,14 +494,12 @@ viewRunData model runData =
                     [ text "Sopped !" ]
                 ]
             else if isStarted runData then
-                [ Options.styled p
-                    [ Typography.headline
-                    , Options.css "margin-top" "1em"
-                    ]
-                    [ text "In progress..." ]
+                [ Loading.indeterminate
+                , btnStop
                 ]
             else
-                []
+                [ btnStart
+                ]
     in
         Layout.render Mdl
             model.mdl
@@ -510,15 +507,15 @@ viewRunData model runData =
             ]
             { header =
                 [ Layout.row
-                    []
-                    ([ Button.render Mdl
+                    [ Options.css "padding-left" "8px" ]
+                    [ Button.render Mdl
                         [ 100 ]
                         model.mdl
                         [ Button.icon
                         , Options.onClick BackToHome
                         ]
                         [ Icon.i "arrow_back" ]
-                     , Layout.title
+                    , Layout.title
                         []
                         [ text <|
                             t.name
@@ -527,23 +524,20 @@ viewRunData model runData =
                                    else
                                     " (CO2)"
                         ]
-                     , Layout.spacer
-                     ]
-                        ++ buttons
-                    )
+                    , Layout.spacer
+                    ]
                 ]
             , drawer = []
             , tabs = ( [], [] )
             , main =
-                [ div
-                    [ class "main-content" ]
+                [ Options.div
+                    [ Options.cs "tbl-run-container"
+                    ]
                     [ div
                         []
                         headElems
                     , table
-                        [ style
-                            [ ( "width", "100%" )
-                            ]
+                        [ class "tbl-run"
                         ]
                         [ thead
                             []
@@ -551,7 +545,7 @@ viewRunData model runData =
                                 []
                                 [ th
                                     []
-                                    [ text "step" ]
+                                    []
                                 , th
                                     []
                                     [ text "hold"

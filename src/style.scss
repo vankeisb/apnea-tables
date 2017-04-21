@@ -89,5 +89,29 @@
 
 	}
 
+	.tbl-run-container {
+
+		.mdl-button--icon.mdl-button--fab {
+			height: 56px;
+			width: 56px;
+			min-height: 56px;
+			min-width: 56px;
+			position: fixed;
+			bottom: 32px;
+			right:32px;
+		}
+
+		.tbl-run {
+			width: 100%;
+
+			td {
+				padding-top: 20px;
+				padding-bottom: 20px;
+			}
+		}
+	}
+
+
+
 }
 
