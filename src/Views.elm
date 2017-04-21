@@ -15,7 +15,7 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Typography as Typography
 import Material.Elevation as Elevation
-import Material.Progress as Loading
+import Material.Progress as Prg
 
 padding =
     Options.css "padding-right" "24px"
@@ -453,7 +453,7 @@ viewRunData model runData =
                     )
 
 
-        btnStop =
+        btnStartStop =
             Button.render Mdl
                 [ 101 ]
                 model.mdl
@@ -461,52 +461,50 @@ viewRunData model runData =
                 , Button.colored
                 , Button.ripple
                 , Button.icon
-                , Options.onClick StopClicked
+                , Options.onClick StartStopClicked
                 ]
-                [ Icon.i "stop" ]
-
-        btnStart =
-            Button.render Mdl
-                [ 102 ]
-                model.mdl
-                [ Button.fab
-                , Button.colored
-                , Button.ripple
-                , Button.icon
-                , Options.onClick StartClicked
+                [ Icon.i <|
+                    if isStarted runData && (not <| isStoppedOrCompleted runData) then
+                        "stop"
+                    else
+                        "play_arrow"
                 ]
-                [ Icon.i "play_arrow" ]
 
 
         headElems =
             if runData.completed then
                 [ Options.styled p
-                    [ Typography.headline
+                    [ Typography.title
                     , Options.css "margin-top" "1em"
                     ]
-                    [ text "Congrats, you made it !" ]
+                    [ text "Congrats !" ]
+                , Options.styled p
+                    [ Typography.body1
+                    ]
+                    [ text "You made it ! Try a harder table..." ]
                 ]
             else if runData.stopTime /= Nothing then
                 [ Options.styled p
-                    [ Typography.headline
-                    , Options.css "margin-top" "1em"
+                    [ Typography.title
                     ]
-                    [ text "Sopped !" ]
+                    [ text "Table stopped" ]
+                , Options.styled p
+                    [ Typography.body1
+                    ]
+                    [ text "You have stopped the table before the end." ]
                 ]
             else if isStarted runData then
-                [ Loading.indeterminate
-                , btnStop
-                ]
+                [ ]
             else
-                [ btnStart
-                ]
+                []
+
     in
         Layout.render Mdl
             model.mdl
             [ Layout.fixedHeader
             ]
             { header =
-                [ Layout.row
+                ([ Layout.row
                     [ Options.css "padding-left" "8px" ]
                     [ Button.render Mdl
                         [ 100 ]
@@ -524,9 +522,13 @@ viewRunData model runData =
                                    else
                                     " (CO2)"
                         ]
-                    , Layout.spacer
                     ]
-                ]
+                ] ++
+                    if isStarted runData && (not <| isStoppedOrCompleted runData) then
+                        [ Prg.indeterminate ]
+                    else
+                        []
+                )
             , drawer = []
             , tabs = ( [], [] )
             , main =
@@ -534,8 +536,9 @@ viewRunData model runData =
                     [ Options.cs "tbl-run-container"
                     ]
                     [ div
-                        []
+                        [ class "tbl-run-head" ]
                         headElems
+                    , btnStartStop
                     , table
                         [ class "tbl-run"
                         ]

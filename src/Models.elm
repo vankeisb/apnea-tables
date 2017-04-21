@@ -107,8 +107,7 @@ type Msg
     | RunTable Int
     | Tick Time
     | BackToHome
-    | StartClicked
-    | StopClicked
+    | StartStopClicked
     | StartTable Time
     | Mdl (Material.Msg Msg)
 

@@ -343,37 +343,22 @@ update msg model =
             , Cmd.none
             )
 
-        StartClicked ->
+        StartStopClicked ->
             withRunData model
                 (\runData ->
-                    case runData.startTime of
-                        Just startTime ->
-                            -- already started...
-                            model ! []
-
-                        Nothing ->
-                            ( model
-                            , Time.now
-                                |> Task.perform StartTable
-                            )
-                )
-
-        StopClicked ->
-            withRunData model
-                (\runData ->
-                    case runData.startTime of
-                        Just startTime ->
-                            ( replaceRunData
-                                model
-                                { runData
-                                    | stopTime = Just runData.curTime
-                                }
-                            , Cmd.none
-                            )
-
-                        Nothing ->
-                            -- not started
-                            model ! []
+                    if isStarted runData && (not <| isStoppedOrCompleted runData) then
+                        ( replaceRunData
+                            model
+                            { runData
+                                | stopTime = Just runData.curTime
+                            }
+                        , Cmd.none
+                        )
+                    else
+                        ( model
+                        , Time.now
+                            |> Task.perform StartTable
+                        )
                 )
 
         StartTable time ->
