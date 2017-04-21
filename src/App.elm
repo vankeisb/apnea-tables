@@ -1,6 +1,6 @@
 module App exposing (..)
 
-import Drive
+import Ports
 import Json.Encode
 import Models exposing (..)
 import Time
@@ -22,12 +22,12 @@ init =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Drive.driveOnFileRead ReadFileOk
-        , Drive.driveOnFileReadError ReadFileError
-        , Drive.driveOnAuthReady AuthReady
-        , Drive.driveOnFileSave (\() -> SaveOk)
-        , Drive.driveOnFileSaveError SaveError
-        , Drive.driveOnAuthSystemFailure (\() -> AuthSystemFailure)
+        [ Ports.driveOnFileRead ReadFileOk
+        , Ports.driveOnFileReadError ReadFileError
+        , Ports.driveOnAuthReady AuthReady
+        , Ports.driveOnFileSave (\() -> SaveOk)
+        , Ports.driveOnFileSaveError SaveError
+        , Ports.driveOnAuthSystemFailure (\() -> AuthSystemFailure)
         , case model.runData of
             Just runData ->
                 if needsTick runData then

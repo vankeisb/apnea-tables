@@ -1,7 +1,7 @@
 module Update exposing (..)
 
 import Date
-import Drive
+import Ports
 import Json.Decode
 import Json.Encode
 import Material
@@ -20,7 +20,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case Debug.log "msg" msg of
         Authenticate ->
-            ( model, Drive.driveAuthenticate () )
+            ( model, Ports.driveAuthenticate () )
 
         AuthReady authenticated ->
             ( { model
@@ -80,7 +80,7 @@ update msg model =
                 | state = Loading
                 , dirty = False
               }
-            , Drive.driveReadFile ()
+            , Ports.driveReadFile ()
             )
 
         Save ->
@@ -91,7 +91,7 @@ update msg model =
                         |> Json.Encode.encode 4
 
                 saveCmd =
-                    Drive.driveSaveFile
+                    Ports.driveSaveFile
                         { fileId = model.fileId
                         , content = fileContents
                         }
