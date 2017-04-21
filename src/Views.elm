@@ -271,58 +271,49 @@ viewTable model tableIndex t =
             [ Options.css "width" "100%"
             , Options.css "padding" "0"
             ]
-            [ Table.table
-                [ Options.css "width" "100%"
-                , Options.css "border" "none"
-                , Options.css "background-color" "transparent"
+            [ table
+                [ class "tbl-steps"
                 ]
-                [ Table.thead
+                [ thead
                     []
-                    [ Table.tr
+                    [ tr
                         []
-                        [ Table.th
-                            [ Options.css "text-align" "center" ]
-                            [ text "step" ]
-                        , Table.th
-                            [ Options.css "text-align" "center" ]
+                        [ th
+                            []
+                            []
+                        , th
+                            []
                             [ text "hold"
                             ]
-                        , Table.th
-                            [ Options.css "text-align" "center" ]
+                        , th
+                            []
                             [ text "breathe"
                             ]
-                        , Table.th
+                        , th
                             []
                             []
                         ]
                     ]
-                , Table.tbody
+                , tbody
                     []
                     (t.steps
                         |> List.indexedMap
                             (\index holdTime ->
-                                Table.tr
+                                tr
                                     []
-                                    [ Table.td
-                                        [ Options.css "border" "none"
-                                        , Options.css "padding" "4px"
-                                        , Options.css "text-align" "center"
-                                        ]
+                                    [ th
+                                        []
                                         [ text <| "#" ++ (toString (index + 1))
                                         ]
-                                    , Table.td
-                                        [ Options.css "border" "none"
-                                        , Options.css "padding" "4px"
-                                        ]
+                                    , td
+                                        []
                                         [ if t.isO2 then
                                             viewDuration model tableIndex index False holdTime
                                           else
                                             viewDuration model tableIndex index True t.fixed
                                         ]
-                                    , Table.td
-                                        [ Options.css "border" "none"
-                                        , Options.css "padding" "4px"
-                                        ]
+                                    , td
+                                        []
                                         [ if index < List.length t.steps - 1 then
                                             if t.isO2 then
                                                 viewDuration model tableIndex index True t.fixed
@@ -331,10 +322,8 @@ viewTable model tableIndex t =
                                           else
                                             text ""
                                         ]
-                                    , Table.td
-                                        [ Options.css "border" "none"
-                                        , Options.css "padding" "4px"
-                                        ]
+                                    , td
+                                        []
                                         [ Button.render Mdl
                                             [ 2, tableIndex, 1 ]
                                             model.mdl
@@ -383,7 +372,6 @@ viewDuration model tableIndex stepIndex isFixed seconds =
         [ Textfield.label "Duration (seconds)"
         , Textfield.value <| toString seconds
         , Textfield.text_
-        , Options.css "width" "100%"
         , Options.onInput <| UpdateTableField tableIndex stepIndex isFixed
         ]
         []
