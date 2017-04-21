@@ -110,6 +110,29 @@
 				padding-bottom: 20px;
 			}
 		}
+
+		.progress {
+			&.breathe {
+				.mdl-progress > .progressbar {
+					background-color: green;
+				}
+				.mdl-progress>.bufferbar {
+					background-image: linear-gradient(to right,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(to right,green,green);
+					z-index: 0;
+					left: 0;
+				}
+			}
+			&.hold {
+				.mdl-progress > .progressbar {
+					background-color: red;
+				}
+				.mdl-progress>.bufferbar {
+					background-image: linear-gradient(to right,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(to right,red,red);
+					z-index: 0;
+					left: 0;
+				}
+			}
+		}
 	}
 
 	.mdl-button--icon.mdl-button--fab {

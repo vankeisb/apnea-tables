@@ -596,28 +596,11 @@ viewProgressEmpty =
 viewProgress : Bool -> Int -> Html Msg
 viewProgress hold percent =
     div
-        [ class "progress"
+        [ class <| "progress" ++
+            if hold then
+                " hold"
+            else
+                " breathe"
         ]
-        [ div
-            [ class <|
-                "progress-bar"
-                    ++ if hold then
-                        " hold"
-                       else
-                        " breathe"
-            , style
-                [ ( "width", (toString percent) ++ "%" )
-                ]
-            ]
-            [ text ""
-            ]
-        , div
-            [ class "progress-label"
-            ]
-            [ text <|
-                if hold then
-                    "hold"
-                else
-                    "breathe"
-            ]
+        [ Prg.progress <| toFloat percent
         ]
