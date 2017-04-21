@@ -186,3 +186,64 @@ formatTimeInterval duration =
 formatSeconds : Int -> String
 formatSeconds secs =
     formatTimeInterval <| toFloat (secs * 1000)
+
+
+stepData : RunData -> Time -> (Int, Bool, Int, Bool)
+stepData runData elapsed =
+    computeStepData_ 0 runData.table.steps 0 runData elapsed
+
+
+computeStepData_ : Int -> List Int -> Int -> RunData -> Time -> (Int, Bool, Int, Bool)
+computeStepData_ index steps total runData elapsed =
+    case steps of
+        first :: rest ->
+            let
+                stepLen =
+                    (runData.table.fixed + first) * 1000
+
+                stepStart =
+                    total
+
+                stepEnd =
+                    total + stepLen
+            in
+                if elapsed >= toFloat stepStart && elapsed < toFloat stepEnd then
+                    let
+                        stepHoldEnd =
+                            total
+                                + if runData.table.isO2 then
+                                    first * 1000
+                                  else
+                                    runData.table.fixed * 1000
+
+                        hold =
+                            elapsed < toFloat stepHoldEnd
+
+                        stepDuration =
+                            toFloat <|
+                                if hold then
+                                    stepHoldEnd - stepStart
+                                else
+                                    stepEnd - stepHoldEnd
+
+                        stepElapsed =
+                            if hold then
+                                elapsed - (toFloat stepStart)
+                            else
+                                elapsed - (toFloat stepHoldEnd)
+
+                        percent =
+                            stepElapsed * 100 / stepDuration
+
+                        isLastStep =
+                            List.isEmpty rest
+
+                        isCompleted =
+                            isLastStep && not hold
+                    in
+                        ( index, hold, round percent, isCompleted )
+                else
+                    computeStepData_ (index + 1) rest (total + stepLen) runData elapsed
+
+        [] ->
+            ( -1, True, 0, False )

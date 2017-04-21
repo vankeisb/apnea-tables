@@ -257,62 +257,8 @@ update msg model =
                                 elapsed =
                                     time - startTime
 
-                                findStepIndex index steps total =
-                                    case steps of
-                                        first :: rest ->
-                                            let
-                                                stepLen =
-                                                    (runData.table.fixed + first) * 1000
-
-                                                stepStart =
-                                                    total
-
-                                                stepEnd =
-                                                    total + stepLen
-                                            in
-                                                if elapsed >= toFloat stepStart && elapsed < toFloat stepEnd then
-                                                    let
-                                                        stepHoldEnd =
-                                                            total
-                                                                + if runData.table.isO2 then
-                                                                    first * 1000
-                                                                  else
-                                                                    runData.table.fixed * 1000
-
-                                                        hold =
-                                                            elapsed < toFloat stepHoldEnd
-
-                                                        stepDuration =
-                                                            toFloat <|
-                                                                if hold then
-                                                                    stepHoldEnd - stepStart
-                                                                else
-                                                                    stepEnd - stepHoldEnd
-
-                                                        stepElapsed =
-                                                            if hold then
-                                                                elapsed - (toFloat stepStart)
-                                                            else
-                                                                elapsed - (toFloat stepHoldEnd)
-
-                                                        percent =
-                                                            stepElapsed * 100 / stepDuration
-
-                                                        isLastStep =
-                                                            List.isEmpty rest
-
-                                                        isCompleted =
-                                                            isLastStep && not hold
-                                                    in
-                                                        ( index, hold, round percent, isCompleted )
-                                                else
-                                                    findStepIndex (index + 1) rest (total + stepLen)
-
-                                        [] ->
-                                            ( -1, True, 0, False )
-
                                 ( newStepIndex, newStepHold, newStepPercent, completed ) =
-                                    findStepIndex 0 runData.table.steps 0
+                                    stepData runData elapsed
 
                                 notifCmd =
                                     if newStepIndex /= runData.curStepIndex || newStepHold /= runData.curStepHold then
