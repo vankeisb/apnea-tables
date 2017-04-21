@@ -327,7 +327,7 @@ viewTable model tableIndex t =
                                     , td
                                         []
                                         [ Button.render Mdl
-                                            [ 2, tableIndex, 1 ]
+                                            [ 3, tableIndex, index, 0 ]
                                             model.mdl
                                             [ Button.icon
                                             , Button.ripple
@@ -335,7 +335,7 @@ viewTable model tableIndex t =
                                             ]
                                             [ Icon.i "close" ]
                                         , Button.render Mdl
-                                            [ 2, tableIndex, 2 ]
+                                            [ 3, tableIndex, index, 1 ]
                                             model.mdl
                                             [ Button.icon
                                             , Button.ripple
@@ -343,7 +343,7 @@ viewTable model tableIndex t =
                                             ]
                                             [ Icon.i "arrow_upward" ]
                                         , Button.render Mdl
-                                            [ 2, tableIndex, 3 ]
+                                            [ 3, tableIndex, index, 2 ]
                                             model.mdl
                                             [ Button.icon
                                             , Button.ripple

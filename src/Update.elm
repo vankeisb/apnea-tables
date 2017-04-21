@@ -313,6 +313,16 @@ update msg model =
 
                                 ( newStepIndex, newStepHold, newStepPercent, completed ) =
                                     findStepIndex 0 runData.table.steps 0
+
+                                notifCmd =
+                                    if newStepIndex /= runData.curStepIndex || newStepHold /= runData.curStepHold then
+                                        Ports.speak <|
+                                            if newStepHold then
+                                                "hold"
+                                            else
+                                                "breathe"
+                                    else
+                                        Cmd.none
                             in
                                 ( replaceRunData
                                     model
@@ -323,7 +333,7 @@ update msg model =
                                         , curStepPercent = newStepPercent
                                         , completed = completed
                                     }
-                                , Cmd.none
+                                , notifCmd
                                 )
 
                         Nothing ->
