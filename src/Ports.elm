@@ -31,3 +31,6 @@ port driveOnAuthReady : (Bool -> m) -> Sub m
 
 
 port driveOnAuthSystemFailure : (() -> m) -> Sub m
+
+
+port pushNotification : String -> Cmd m
