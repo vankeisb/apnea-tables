@@ -42,7 +42,8 @@ update msg model =
             ( { model
                 | authState = AuthSystemFailed
                 , state = Ready
-            }, Cmd.none
+              }
+            , Cmd.none
             )
 
         ReadFileOk res ->
@@ -174,7 +175,6 @@ update msg model =
             , Cmd.none
             )
 
-
         UpdateTableField tableIndex index isFixed newValue ->
             ( replaceTable
                 model
@@ -191,17 +191,17 @@ update msg model =
                             { t
                                 | steps =
                                     t.steps
-                                        |> List.indexedMap (\stepIndex step ->
-                                            if stepIndex == index then
-                                                newValueInt
-                                            else
-                                                step
-                                        )
+                                        |> List.indexedMap
+                                            (\stepIndex step ->
+                                                if stepIndex == index then
+                                                    newValueInt
+                                                else
+                                                    step
+                                            )
                             }
                 )
             , Cmd.none
             )
-
 
         AddStep before tableIndex stepIndex ->
             ( replaceTable
@@ -248,152 +248,151 @@ update msg model =
                     Nothing ->
                         model ! []
 
-
         Tick time ->
-            withRunData model (\runData ->
-                case runData.startTime of
-                    Just startTime ->
-                        let
-                            elapsed =
-                                time - startTime
+            withRunData model
+                (\runData ->
+                    case runData.startTime of
+                        Just startTime ->
+                            let
+                                elapsed =
+                                    time - startTime
 
-                            findStepIndex index steps total =
-                                case steps of
-                                    first :: rest ->
-                                        let
-                                            stepLen =
-                                                (runData.table.fixed + first) * 1000
+                                findStepIndex index steps total =
+                                    case steps of
+                                        first :: rest ->
+                                            let
+                                                stepLen =
+                                                    (runData.table.fixed + first) * 1000
 
-                                            stepStart =
-                                                total
+                                                stepStart =
+                                                    total
 
-                                            stepEnd =
-                                                total + stepLen
+                                                stepEnd =
+                                                    total + stepLen
+                                            in
+                                                if elapsed >= toFloat stepStart && elapsed < toFloat stepEnd then
+                                                    let
+                                                        stepHoldEnd =
+                                                            total
+                                                                + if runData.table.isO2 then
+                                                                    first * 1000
+                                                                  else
+                                                                    runData.table.fixed * 1000
 
-                                        in
-                                            if elapsed >= toFloat stepStart && elapsed < toFloat stepEnd then
-                                                let
-                                                    stepHoldEnd =
-                                                        total +
-                                                            if runData.table.isO2 then
-                                                                first * 1000
-                                                            else
-                                                                runData.table.fixed * 1000
-                                                    hold =
-                                                        elapsed < toFloat stepHoldEnd
+                                                        hold =
+                                                            elapsed < toFloat stepHoldEnd
 
-                                                    stepDuration =
-                                                        toFloat <|
+                                                        stepDuration =
+                                                            toFloat <|
+                                                                if hold then
+                                                                    stepHoldEnd - stepStart
+                                                                else
+                                                                    stepEnd - stepHoldEnd
+
+                                                        stepElapsed =
                                                             if hold then
-                                                                stepHoldEnd - stepStart
+                                                                elapsed - (toFloat stepStart)
                                                             else
-                                                                stepEnd - stepHoldEnd
+                                                                elapsed - (toFloat stepHoldEnd)
 
-                                                    stepElapsed =
-                                                        if hold then
-                                                            elapsed - (toFloat stepStart)
-                                                        else
-                                                            elapsed - (toFloat stepHoldEnd)
+                                                        percent =
+                                                            stepElapsed * 100 / stepDuration
 
-                                                    percent =
-                                                        stepElapsed * 100 / stepDuration
+                                                        isLastStep =
+                                                            List.isEmpty rest
 
-                                                    isLastStep =
-                                                        List.isEmpty rest
+                                                        isCompleted =
+                                                            isLastStep && not hold
+                                                    in
+                                                        ( index, hold, round percent, isCompleted )
+                                                else
+                                                    findStepIndex (index + 1) rest (total + stepLen)
 
-                                                    isCompleted =
-                                                        isLastStep && not hold
+                                        [] ->
+                                            ( -1, True, 0, False )
 
-                                                in
-                                                    ( index, hold, round percent, isCompleted)
-                                            else
-                                                findStepIndex (index + 1) rest (total + stepLen)
-                                    [] ->
-                                        (-1, True, 0, False)
+                                ( newStepIndex, newStepHold, newStepPercent, completed ) =
+                                    findStepIndex 0 runData.table.steps 0
+                            in
+                                ( replaceRunData
+                                    model
+                                    { runData
+                                        | curTime = time
+                                        , curStepIndex = newStepIndex
+                                        , curStepHold = newStepHold
+                                        , curStepPercent = newStepPercent
+                                        , completed = completed
+                                    }
+                                , Cmd.none
+                                )
 
-                            (newStepIndex, newStepHold, newStepPercent, completed) =
-                                findStepIndex 0 runData.table.steps 0
-                        in
+                        Nothing ->
                             ( replaceRunData
                                 model
                                 { runData
                                     | curTime = time
-                                    , curStepIndex = newStepIndex
-                                    , curStepHold = newStepHold
-                                    , curStepPercent = newStepPercent
-                                    , completed = completed
+                                }
+                            , Cmd.none
+                            )
+                )
+
+        BackToHome ->
+            ( { model
+                | runData = Nothing
+              }
+            , Cmd.none
+            )
+
+        StartClicked ->
+            withRunData model
+                (\runData ->
+                    case runData.startTime of
+                        Just startTime ->
+                            -- already started...
+                            model ! []
+
+                        Nothing ->
+                            ( model
+                            , Time.now
+                                |> Task.perform StartTable
+                            )
+                )
+
+        StopClicked ->
+            withRunData model
+                (\runData ->
+                    case runData.startTime of
+                        Just startTime ->
+                            ( replaceRunData
+                                model
+                                { runData
+                                    | stopTime = Just runData.curTime
                                 }
                             , Cmd.none
                             )
 
-                    Nothing ->
-                        ( replaceRunData
-                            model
-                            { runData
-                                | curTime = time
-                            }
-                        , Cmd.none
-                        )
-            )
-
-
-        BackToHome ->
-            ({ model
-                | runData = Nothing
-            },
-            Cmd.none
-            )
-
-        StartClicked ->
-            withRunData model (\runData ->
-                case runData.startTime of
-
-                    Just startTime ->
-                        -- already started...
-                        model ! []
-
-                    Nothing ->
-                        ( model
-                        , Time.now
-                            |> Task.perform StartTable
-                        )
-            )
-
-
-        StopClicked ->
-            withRunData model (\runData ->
-                case runData.startTime of
-                    Just startTime ->
-                        ( replaceRunData
-                            model
-                            { runData
-                                | stopTime = Just runData.curTime
-                            }
-                        , Cmd.none
-                        )
-
-                    Nothing ->
-                        -- not started
-                        model ! []
-            )
-
+                        Nothing ->
+                            -- not started
+                            model ! []
+                )
 
         StartTable time ->
-            withRunData model (\runData ->
-                let
-                    newRunData =
-                        initRunData runData.table
-                in
-                    ( replaceRunData
-                        model
-                        { newRunData
-                            | startTime = Just time
-                        }
-                    , Cmd.none
-                    )
-            )
+            withRunData model
+                (\runData ->
+                    let
+                        newRunData =
+                            initRunData runData.table
+                    in
+                        ( replaceRunData
+                            model
+                            { newRunData
+                                | startTime = Just time
+                            }
+                        , Cmd.none
+                        )
+                )
 
-         -- Boilerplate: Mdl action handler.
+        -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
             Material.update Mdl msg_ model
 
@@ -402,11 +401,11 @@ replaceRunData model runData =
     { model | runData = Just runData }
 
 
-withRunData : Model -> (RunData -> (Model,Cmd Msg)) -> (Model, Cmd Msg)
+withRunData : Model -> (RunData -> ( Model, Cmd Msg )) -> ( Model, Cmd Msg )
 withRunData model f =
     model.runData
         |> Maybe.map f
-        |> Maybe.withDefault (model, Cmd.none)
+        |> Maybe.withDefault ( model, Cmd.none )
 
 
 replaceTable : Model -> Int -> (TableDef -> TableDef) -> Model

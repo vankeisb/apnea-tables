@@ -28,15 +28,15 @@ subscriptions model =
         , Drive.driveOnFileSave (\() -> SaveOk)
         , Drive.driveOnFileSaveError SaveError
         , Drive.driveOnAuthSystemFailure (\() -> AuthSystemFailure)
-        ,
-            case model.runData of
-                Just runData ->
-                    if needsTick runData then
-                        Time.every Time.second Tick
-                    else
-                        Sub.none
-                Nothing ->
+        , case model.runData of
+            Just runData ->
+                if needsTick runData then
+                    Time.every Time.second Tick
+                else
                     Sub.none
+
+            Nothing ->
+                Sub.none
         ]
 
 

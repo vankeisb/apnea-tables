@@ -58,12 +58,6 @@
 
 	}
 
-	.main-content {
-		padding-left: 8%;
-		padding-right: 8%;
-		padding-top: 1em;
-	}
-
 	.tbl {
 		width: 100%;
 		border: none;
@@ -75,6 +69,19 @@
 				padding: 0;
 			}
 
+		}
+	}
+
+	.tbl-card {
+
+		.tbl-name input {
+			font-size: 24px;
+		}
+
+		td {
+			.mdl-textfield__input {
+				font-size: 13px;
+			}
 		}
 	}
 
