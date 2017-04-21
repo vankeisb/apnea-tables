@@ -97,10 +97,6 @@
 		padding-right: 12px;
 
 		.mdl-button--icon.mdl-button--fab {
-			height: 56px;
-			width: 56px;
-			min-height: 56px;
-			min-width: 56px;
 			position: fixed;
 			bottom: 32px;
 			right:32px;
@@ -116,7 +112,12 @@
 		}
 	}
 
-
+	.mdl-button--icon.mdl-button--fab {
+		height: 56px;
+		width: 56px;
+		min-height: 56px;
+		min-width: 56px;
+	}
 
 }
 

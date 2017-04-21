@@ -35,7 +35,7 @@ viewBanner model =
         loadItem =
             Menu.item
                 [ Menu.onSelect <| Reload, padding ]
-                [ i "cloud_download", text "Load" ]
+                [ i "cloud_download", text "Load from drive" ]
 
         saveItem =
             Menu.item
@@ -45,12 +45,12 @@ viewBanner model =
         addO2Item =
             Menu.item
                 [ Menu.onSelect <| CreateTable True, padding ]
-                [ i "playlist_add", text "O2" ]
+                [ i "playlist_add", text "O2 table" ]
 
         addCO2Item =
             Menu.item
                 [ Menu.onSelect <| CreateTable False, padding ]
-                [ i "playlist_add", text "CO2" ]
+                [ i "playlist_add", text "CO2 table" ]
 
         addItems =
             [ addO2Item, addCO2Item ]
@@ -155,8 +155,15 @@ view model =
                                 ]
                                 (if List.isEmpty model.tables then
                                     [ Options.styled p
-                                        [ Typography.headline ]
-                                        [ text "You have no tables. Load from drive, or create a new table..." ]
+                                        [ Typography.title
+                                        ]
+                                        [ text "No tables found" ]
+                                    , Options.styled p
+                                        [ Typography.body1
+                                        ]
+                                        [ text """You have no tables defined.
+                                                Create tables, or load from google drive
+                                                using the menu.""" ]
                                     ]
                                  else
                                     List.indexedMap (viewTable model) model.tables
@@ -494,9 +501,17 @@ viewRunData model runData =
                     [ text "You have stopped the table before the end." ]
                 ]
             else if isStarted runData then
-                [ ]
-            else
                 []
+            else
+                [ Options.styled p
+                    [ Typography.title
+                    ]
+                    [ text "Ready !" ]
+                , Options.styled p
+                    [ Typography.body1
+                    ]
+                    [ text "Click the 'play' button whenever you are ready." ]
+                ]
 
     in
         Layout.render Mdl
